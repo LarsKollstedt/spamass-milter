@@ -769,8 +769,9 @@ mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	sctx = (struct context *)malloc(sizeof(*sctx));
 	if (!hostaddr)
 	{
-		debug(D_ALWAYS, "Warning - mlfi_connect got passed a NULL hostaddr!");
-		sctx->connect_ip.s_addr = 0;
+		/* not a socket; probably a local user calling sendmail directly */
+		/* set to 127.0.0.1 */
+		sctx->connect_ip.s_addr = inet_htonl(INADDR_LOOPBACK);
 	} else
 	{
 	sctx->connect_ip = ((struct sockaddr_in *) hostaddr)->sin_addr;
