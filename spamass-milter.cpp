@@ -277,6 +277,9 @@ main(int argc, char* argv[])
             case 'x':
                 flag_expand = true;
                 break;
+			case 'D':
+				spamdhost = strdup(optarg);
+				break;
 			case 'm':
 				dontmodify = true;
 				break;
