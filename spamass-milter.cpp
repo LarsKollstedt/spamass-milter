@@ -1234,7 +1234,7 @@ mlfi_eoh(SMFICTX* ctx)
 
   try {
     // add blank line between header and body
-    assassin->output("\r\n",2);
+    assassin->output("\n\n",2);
   } catch (string& problem)
     {
       throw_error(problem);
