@@ -732,10 +732,26 @@ retrieve_field(const string& header, const string& field)
 
 // {{{ MLFI callbacks
 
+//
+// Gets called once when a client connects to sendmail
+//
+// gets the originating IP address and checks it against the ignore list
+// if it isn't in the list, store the IP in a structure and store a 
+// pointer to it in the private data area.
+//
 sfsistat 
 mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 {
+	struct connect_info *ci;
+
 	debug(D_FUNC, "mlfi_connect: enter");
+
+	/* allocate a structure to store the IP address in */
+	ci = (struct connect_info *)malloc(sizeof(*ci));
+	ci->ip = ((struct sockaddr_in *) hostaddr)->sin_addr;
+	
+	/* store a pointer to it with setpriv */
+	smfi_setpriv(ctx, ci);
 
 	if (ip_in_networklist(((struct sockaddr_in *) hostaddr)->sin_addr, &ignorenets))
 	{
@@ -1169,6 +1185,33 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	{
 		assassin->set_numrcpt(1);
 		assassin->set_rcpt(string(envrcpt[0]));
+
+		// Check if the SPAMC program has already been run, if not we run it.
+		if ( !(assassin->connected) )
+		{
+			try {
+				assassin->connected = 1; // SPAMC is getting ready to run
+				assassin->Connect();
+
+				/* Send the envelope headers as X-Envelope-From: and
+				   X-Envelope-To: so that SpamAssassin can use them in its
+				   whitelist checks.  Also forge a dummy Received: header
+				   because SA gets the connecting IP from the topmost one
+				*/
+
+				assassin->output("X-Envelope-From: ");
+				assassin->output(assassin->from());
+				assassin->output("\r\nX-Envelope-To: ");
+				assassin->output(assassin->rcpt());
+				assassin->output("\r\nReceived: from [");
+				assassin->output(assassin->connectip());
+				assassin->output("]\r\n");
+			} 
+			catch (string& problem) {
+				throw_error(problem);
+				return SMFIS_TEMPFAIL;
+			};
+		}
 	} else
 	{
 		assassin->set_numrcpt();
@@ -1736,6 +1779,16 @@ SpamAssassin::output(const void* buffer, long size)
   } while ( total < size );
 
   debug(D_FUNC, "::output exit2");
+}
+
+void SpamAssassin::output(const void* buffer)
+{
+	output(buffer, strlen((const char *)buffer));
+}
+
+void SpamAssassin::output(string buffer)
+{
+	output(buffer.c_str(), buffer.size());
 }
 
 void SpamAssassin::output(const void* buffer)
