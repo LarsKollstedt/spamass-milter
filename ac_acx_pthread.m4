@@ -1,5 +1,5 @@
 dnl BEGIN http://www.gnu.org/software/ac-archive/htmldoc/acx_pthread.html
-dnl $Id: ac_acx_pthread.m4,v 1.3 2004/09/07 01:02:58 dnelson Exp $
+dnl $Id: ac_acx_pthread.m4,v 1.1 2003/06/07 02:56:50 dnelson Exp $
 dnl @synopsis ACX_PTHREAD([ACTION-IF-FOUND[, ACTION-IF-NOT-FOUND]])
 dnl
 dnl This macro figures out how to build C programs using POSIX
@@ -36,7 +36,7 @@ dnl (with help from M. Frigo), as well as ac_pthread and hb_pthread
 dnl macros posted by AFC to the autoconf macro repository.  We are also
 dnl grateful for the helpful feedback of numerous users.
 dnl
-dnl @version Id: acx_pthread.m4,v 1.10 2004-06-16
+dnl @version Id: acx_pthread.m4,v 1.7 2002/09/17 13:21:15 simons Exp 
 dnl @author Steven G. Johnson <stevenj@alum.mit.edu> and Alejandro Forero Cuervo <bachue@bachue.com>
 
 AC_DEFUN([ACX_PTHREAD], [
@@ -75,10 +75,9 @@ fi
 
 # Create a list of thread flags to try.  Items starting with a "-" are
 # C compiler flags, and other items are library names, except for "none"
-# which indicates that we try without any flags at all, and "pthread-config"
-# which is a program returning the flags for the Pth emulation library.
+# which indicates that we try without any flags at all.
 
-acx_pthread_flags="pthreads none -Kthread -kthread lthread -pthread -pthreads -mthreads pthread --thread-safe -mt pthread-config"
+acx_pthread_flags="pthreads none -Kthread -kthread lthread -pthread -pthreads -mthreads pthread --thread-safe -mt"
 
 # The ordering *is* (sometimes) important.  Some notes on the
 # individual items follow:
@@ -97,7 +96,6 @@ acx_pthread_flags="pthreads none -Kthread -kthread lthread -pthread -pthreads -m
 #      also defines -D_REENTRANT)
 # pthread: Linux, etcetera
 # --thread-safe: KAI C++
-# pthread-config: use pthread-config program (for GNU Pth library)
 
 case "${host_cpu}-${host_os}" in
         *solaris*)
@@ -126,13 +124,6 @@ for flag in $acx_pthread_flags; do
                 AC_MSG_CHECKING([whether pthreads work with $flag])
                 PTHREAD_CFLAGS="$flag"
                 ;;
-
-		pthread-config)
-		AC_CHECK_PROG(acx_pthread_config, pthread-config, yes, no)
-		if test x"$acx_pthread_config" = xno; then continue; fi
-		PTHREAD_CFLAGS="`pthread-config --cflags`"
-		PTHREAD_LIBS="`pthread-config --ldflags` `pthread-config --libs`"
-		;;
 
                 *)
                 AC_MSG_CHECKING([for the pthreads library -l$flag])
@@ -204,7 +195,7 @@ if test "x$acx_pthread_ok" = xyes; then
         AC_MSG_CHECKING([if more special flags are required for pthreads])
         flag=no
         case "${host_cpu}-${host_os}" in
-                *-aix* | *-freebsd* | *-darwin*) flag="-D_THREAD_SAFE";;
+                *-aix* | *-freebsd*)     flag="-D_THREAD_SAFE";;
                 *solaris* | *-osf* | *-hpux*) flag="-D_REENTRANT";;
         esac
         AC_MSG_RESULT(${flag})
