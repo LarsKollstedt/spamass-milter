@@ -1694,6 +1694,7 @@ SpamAssassin::SpamAssassin():
   error(false),
   running(false),
   connected(false),
+  running(false),
   _numrcpt(0)
 {
 }
