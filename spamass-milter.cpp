@@ -1230,7 +1230,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	debug(D_FUNC, "mlfi_envrcpt: enter");
 
 	/* open a pipe to sendmail so we can do address expansion */
-	sprintf(buf, "%s -bv \"%s\"", SENDMAIL, envrcpt[0]);
+	sprintf(buf, "%s -bv \"%s\" 2>&1", SENDMAIL, envrcpt[0]);
 	debug(D_RCPT, "calling %s", buf);
 	p = popen(buf, "r");
 	if (!p)
