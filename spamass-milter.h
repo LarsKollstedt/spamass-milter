@@ -39,6 +39,8 @@
 
 using namespace std;
 
+using namespace std;
+
 string retrieve_field(const string&, const string&);
 
 sfsistat mlfi_connect(SMFICTX*, char*, _SOCK_ADDR*);

@@ -371,6 +371,8 @@ main(int argc, char* argv[])
       if (stat(sock,&junk) == 0) unlink(sock);
    }
 
+   openlog("spamass-milter", LOG_PID, LOG_MAIL);
+
    (void) smfi_setconn(sock);
 	if (smfi_register(smfilter) == MI_FAILURE) {
 		fprintf(stderr, "smfi_register failed\n");
@@ -1174,6 +1176,8 @@ mlfi_eoh(SMFICTX* ctx)
          return SMFIS_TEMPFAIL;
        };
      }
+
+  debug(1, "mlfi_eoh: enter");
 
   try {
     // add blank line between header and body
@@ -2048,6 +2052,42 @@ void debug(enum debuglevel level, const char* fmt, ...)
 	}
 }
 
+void debug(int level, const char* string, ...)
+{
+	if (flag_debug >= level)
+	{
+#if defined(HAVE_VSYSLOG)
+	    va_list vl;
+	    va_start(vl, string);
+		vsyslog(LOG_ERR, string, vl);
+		va_end(vl);
+#else
+#if defined(HAVE_VASPRINTF)
+		char *buf;
+#else
+		char buf[1024];
+#endif
+	    va_list vl;
+	    va_start(vl, string);
+#if defined(HAVE_VASPRINTF)
+	    vasprintf(&buf, string, vl);
+#else
+#if defined(HAVE_VSNPRINTF)
+	    vsnprintf(buf, sizeof(buf)-1, string, vl);
+#else
+		/* XXX possible buffer overflow here; be careful what you pass to debug() */
+		vsprintf(buf, string, vl);
+#endif
+#endif
+	    va_end(vl);
+		syslog(LOG_ERR, "%s", buf);
+#if defined(HAVE_VASPRINTF)
+	    free(buf);
+#endif 
+#endif /* vsyslog */
+	}
+}
+
 // case-insensitive search 
 string::size_type 
 find_nocase(const string& array, const string& pattern, string::size_type start)
@@ -2322,6 +2362,14 @@ FILE *popenv(char *const argv[], const char *type, pid_t *pid)
 	}
 
 	return (iop);
+}
+
+/* closeall() - close all FDs >= a specified value */ 
+void closeall(int fd) 
+{
+	int fdlimit = sysconf(_SC_OPEN_MAX); 
+	while (fd < fdlimit) 
+		close(fd++); 
 }
 
 // }}}
