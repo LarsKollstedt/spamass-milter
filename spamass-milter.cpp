@@ -279,6 +279,10 @@ main(int argc, char* argv[])
 			case 'm':
 				dontmodify = true;
 				break;
+			case 'r':
+				flag_reject = true;
+				reject_score = atoi(optarg);
+				break;
             case '?':
                 err = 1;
                 break;
