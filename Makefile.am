@@ -52,12 +52,8 @@ upload: dist-all sign
 changelog:
 	cvs2cl --no-wrap -S -U contrib/users 
 
-# Can't distribute mdoc2man yet
-#.1.man: mdoc2man.awk
-#	$(AWK) -f mdoc2man.awk $< > $@
-
-spamass-milter.man.in: spamass-milter.1.in mdoc2man.awk
-	$(AWK) -f mdoc2man.awk spamass-milter.1.in > $@
+.1.man: mdoc2man.awk
+	$(AWK) -f mdoc2man.awk $< > $@
 
 if HAVE_MDOC
 man_MANS = 	spamass-milter.1
