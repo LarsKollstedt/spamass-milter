@@ -425,7 +425,7 @@ main(int argc, char* argv[])
 	} else {
       debug(D_MISC, "smfi_register succeeded");
    }
-	debug(D_ALWAYS, "spamass-milter %s ($Revision: 1.68 $) starting", PACKAGE_VERSION);
+	debug(D_ALWAYS, "spamass-milter %s starting", PACKAGE_VERSION);
 	err = smfi_main();
 	debug(D_ALWAYS, "spamass-milter %s exiting", PACKAGE_VERSION);
 	if (pidfilename)
