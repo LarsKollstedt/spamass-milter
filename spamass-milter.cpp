@@ -298,12 +298,23 @@ main(int argc, char* argv[])
 				defaultuser = strdup(optarg);
 				break;
 			case 'b':
+			case 'B':
+				if (flag_bucket)
+				{
+					printf(stderr, "Can only have one -b or -B flag\n");
+					err = 1;
+					break;
+				}
 				flag_bucket = true;
+				if (c == 'b')
+				{
+					flag_bucket_only = true;
+					smfilter.xxfi_flags |= SMFIF_DELRCPT; // May delete recipients
+				}
 				// we will modify the recipient list; if spamc returns
 				// indicating that this mail is spam, the message will be
 				// sent to <optarg>@localhost
 				smfilter.xxfi_flags |= SMFIF_ADDRCPT; // May add recipients
-				smfilter.xxfi_flags |= SMFIF_DELRCPT; // May delete recipients
 				// XXX we should probably verify that optarg is vaguely sane
 				spambucket = strdup( optarg );
 				break;
