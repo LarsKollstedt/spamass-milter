@@ -323,6 +323,9 @@ main(int argc, char* argv[])
 				// XXX we should probably verify that optarg is vaguely sane
 				spambucket = strdup( optarg );
 				break;
+			case 'x':
+				flag_expand = true;
+				break;
             case '?':
                 err = 1;
                 break;
@@ -1236,10 +1239,12 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 
 	debug(D_FUNC, "mlfi_envrcpt: enter");
 
+	if (flag_expand)
+	{
 	/* open a pipe to sendmail so we can do address expansion */
 	sprintf(buf, "%s -bv \"%s\" 2>&1", SENDMAIL, envrcpt[0]);
 	debug(D_RCPT, "calling %s", buf);
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) /* popen bug - see PR bin/50770 */
 	debug(D_FUNC, "locking mutex");
 	rv = pthread_mutex_lock(&popen_mutex);
 	if (rv)
@@ -1253,6 +1258,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	if (!p)
 	{
 		debug(D_RCPT, "popen failed(%s).  Will not expand aliases", strerror(errno));
+			assassin->expandedrcpt.push_back(envrcpt[0]);
 	} else
 	{
 		while (fgets(buf, sizeof(buf), p) != NULL)
@@ -1276,9 +1282,8 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 				assassin->expandedrcpt.push_back(p+7);
 		}
 	}
-	}
-	debug(D_RCPT, "Total of %d actual recipients", (int)assassin->expandedrcpt.size());
 	pclose(p); p = NULL;
+		}
 #if defined(__FreeBSD__)
 	debug(D_FUNC, "unlocking mutex");
 	rv = pthread_mutex_unlock(&popen_mutex);
@@ -1289,6 +1294,11 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	}		
 	debug(D_FUNC, "unlocked mutex");
 #endif
+	} else
+	{
+		assassin->expandedrcpt.push_back(envrcpt[0]);
+	}	
+	debug(D_RCPT, "Total of %d actual recipients", (int)assassin->expandedrcpt.size());
 
 	if (assassin->numrcpt() == 0)
 	{
