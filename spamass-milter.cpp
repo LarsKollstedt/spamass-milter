@@ -1226,6 +1226,8 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	SpamAssassin* assassin = sctx->assassin;
 	char **rcpt;
 
+	debug(D_FUNC, "mlfi_envrcpt: enter");
+
 	if (assassin->numrcpt() == 0)
 	{
 		assassin->set_numrcpt(1);
@@ -1278,6 +1280,9 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	{
 		assassin->recipients.push_back( *rcpt ); // XXX verify that this worked
 	}
+
+	debug(D_FUNC, "mlfi_envrcpt: exit");
+
 	return SMFIS_CONTINUE;
 }
 
