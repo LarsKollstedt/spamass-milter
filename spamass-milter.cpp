@@ -2884,6 +2884,16 @@ int ip_in_networklist(struct in_addr ip, struct networklist *list)
 	return 0;
 }
 
+char *strlwr(char *str)
+{
+    char *s = str;
+    while (*s)
+    {
+        *s = tolower(*s);
+        s++;
+    }
+    return str;
+}
 
 // }}}
 // vim6:ai:noexpandtab
