@@ -1247,22 +1247,14 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	{
 	/* open a pipe to sendmail so we can do address expansion */
 
-#if defined(HAVE_ASPRINTF)
-		char *buf;
-#else
 		char buf[1024];
-#endif
 		char *fmt="%s -bv \"%s\" 2>&1";
 
-#if defined(HAVE_ASPRINTF)
-		asprintf(&buf, fmt, SENDMAIL, envrcpt[0]);
-#else
 #if defined(HAVE_SNPRINTF)
 		snprintf(buf, sizeof(buf)-1, fmt, SENDMAIL, envrcpt[0]);
 #else
 		/* XXX possible buffer overflow here */
 		sprintf(buf, fmt, SENDMAIL, envrcpt[0]);
-#endif
 #endif
 
 	debug(D_RCPT, "calling %s", buf);
@@ -1313,9 +1305,6 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		debug(D_ALWAYS, "Could not unlock popen mutex: %s", strerror(rv));
 		abort();
 	}		
-#endif
-#if defined(HAVE_ASPRINTF)
-		free(buf);
 #endif
 	} else
 	{
