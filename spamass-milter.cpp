@@ -1165,13 +1165,6 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		assassin->set_numrcpt(1);
 		assassin->set_rcpt(string(envrcpt[0]));
 
-		// Check if the SPAMC program has already been run, if not we run it.
-		if ( !(assassin->connected) )
-		{
-			try {
-				assassin->connected = 1; // SPAMC is getting ready to run
-				assassin->Connect();
-
 				/* Send the envelope headers as X-Envelope-From: and
 				   X-Envelope-To: so that SpamAssassin can use them in its
 				   whitelist checks.  Also forge as complete a dummy
@@ -1210,12 +1203,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 				assassin->output((string)"X-Envelope-From: "+assassin->from()+"\r\n");
 				assassin->output((string)"X-Envelope-To: "+assassin->rcpt()+"\r\n");
 				assassin->output((string)"Received: from "+macro_s+" ("+smfi_getsymval(ctx,"_")+") by "+smfi_getsymval(ctx,"j")+"; "+macro_b+"\r\n");
-			} 
-			catch (string& problem) {
-				throw_error(problem);
-				return SMFIS_TEMPFAIL;
-			};
-		}
+
 	} else
 	{
 		assassin->set_numrcpt();
