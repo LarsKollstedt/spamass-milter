@@ -155,7 +155,10 @@ public:
 
   // Variables for SpamAssassin influenced fields
   string x_spam_status, x_spam_flag, x_spam_report, x_spam_prev_content_type;
-  string x_spam_checker_version, x_spam_level, _content_type, _subject;
+  string x_spam_checker_version, x_spam_level, _content_type, _subject, _rcpt;
+  
+  // Counter to keep track of the number of recipients
+  int    _numrcpt;
   
   // Envelope info: MAIL FROM:, RCPT TO:, and IP address of remote host
   // _rcpt only holds the first recipient if there are more than one
