@@ -1231,14 +1231,15 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	debug(D_FUNC, "mlfi_envrcpt: enter");
 
 	/* open a pipe to sendmail so we can do address expansion */
-	sprintf(buf,"%s -bv \"%s\"",_PATH_SENDMAIL, envrcpt[0]);
+	sprintf(buf, "%s -bv \"%s\"", SENDMAIL, envrcpt[0]);
 	debug(D_RCPT, "calling %s", buf);
-	p = popen(buf,"r");
+	p = popen(buf, "r");
 	if (!p)
 	{
-		debug(D_RCPT, "popen failed. Will not expand aliases: ", strerror(errno));
+		debug(D_RCPT, "popen failed(%s).  Will not expand aliases", strerror(errno));
 	} else
-	while (fgets(buf,sizeof(buf),p) != NULL)
+	{
+		while (fgets(buf, sizeof(buf), p) != NULL)
 	{
 		int i=strlen(buf);
         while (i > 0 && buf[i - 1] <= ' ')
@@ -1251,6 +1252,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 			debug(D_RCPT, "user: %s", p+7);
 			newrecipients.push_back(p+7);
 		}
+	}
 	}
 	debug(D_RCPT, "Expanded to %d recipients", (int)newrecipients.size());
 	pclose(p);
