@@ -750,9 +750,10 @@ mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	{
 		debug(D_NET, "%s is in our ignore list - accepting message",
 		    inet_ntoa(((struct sockaddr_in *) hostaddr)->sin_addr));
-		debug(D_FUNC, "mlfi_connect: exit");
+		debug(D_FUNC, "mlfi_connect: exit ignore");
 		return SMFIS_ACCEPT;
 	}
+	
 	// Tell Milter to continue
 	debug(D_FUNC, "mlfi_connect: exit");
 
