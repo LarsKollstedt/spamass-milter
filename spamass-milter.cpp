@@ -286,6 +286,10 @@ main(int argc, char* argv[])
                 debug(D_MISC, "Parsing recipient address ignore list");
                 parse_addresslist(optarg, &ignoreaddrs);
                 break;
+			case 'r':
+				flag_reject = true;
+				reject_score = atoi(optarg);
+				break;
             case '?':
                 err = 1;
                 break;
