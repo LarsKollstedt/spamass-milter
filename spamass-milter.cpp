@@ -2729,6 +2729,9 @@ int ip_in_networklist(struct in_addr ip, struct networklist *list)
 {
 	int i;
 
+	if (list->num_nets == 0)
+		return 0;
+		
 	debug(D_NET, "Checking %s against:", inet_ntoa(ip));
 	for (i = 0; i < list->num_nets; i++)
 	{
