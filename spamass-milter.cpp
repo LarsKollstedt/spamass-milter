@@ -2161,7 +2161,7 @@ SpamAssassin::local_user()
   if (_rcpt[0]=='<')
   return _rcpt.substr(1,_rcpt.find('@')-1);
   else
-  	return _rcpt.substr(0,_rcpt.find('@'));
+  	return _rcpt.substr(0, _rcpt.find_first_of('@+'));
 }
 
 string
@@ -2169,9 +2169,9 @@ SpamAssassin::full_user()
 {
   string name;
   // assuming we have a recipient in the form: <username@somehost.somedomain>
-  // we return 'username@somehost.somedomain'
+  // (angle brackets optional) we return 'username@somehost.somedomain'
   if (_rcpt[0] == '<')
-    name = _rcpt.substr(1,_rcpt.find('>')-1);
+    name = _rcpt.substr(1, _rcpt.find('>')-1);
   else
   	name = _rcpt;
   if(name.find('@') == string::npos)
