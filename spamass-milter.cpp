@@ -1226,12 +1226,23 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	SpamAssassin* assassin = sctx->assassin;
 	FILE *p;
 	char buf[1024];
+	int rv;
 
 	debug(D_FUNC, "mlfi_envrcpt: enter");
 
 	/* open a pipe to sendmail so we can do address expansion */
 	sprintf(buf, "%s -bv \"%s\" 2>&1", SENDMAIL, envrcpt[0]);
 	debug(D_RCPT, "calling %s", buf);
+#if defined(__FreeBSD__)
+	debug(D_FUNC, "locking mutex");
+	rv = pthread_mutex_lock(&popen_mutex);
+	if (rv)
+	{
+		debug(D_ALWAYS, "Could not lock popen mutex: %s", strerror(rv));
+		abort();
+	}		
+	debug(D_FUNC, "locked mutex");
+#endif
 	p = popen(buf, "r");
 	if (!p)
 	{
@@ -1262,6 +1273,16 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	}
 	debug(D_RCPT, "Total of %d actual recipients", (int)assassin->expandedrcpt.size());
 	pclose(p); p = NULL;
+#if defined(__FreeBSD__)
+	debug(D_FUNC, "unlocking mutex");
+	rv = pthread_mutex_unlock(&popen_mutex);
+	if (rv)
+	{
+		debug(D_ALWAYS, "Could not unlock popen mutex: %s", strerror(rv));
+		abort();
+	}		
+	debug(D_FUNC, "unlocked mutex");
+#endif
 
 	if (assassin->numrcpt() == 0)
 	{
