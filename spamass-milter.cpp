@@ -1653,7 +1653,7 @@ SpamAssassin::spam_level()
 }
 
 string& 
-spam_checker_version()
+SpamAssassin::spam_checker_version()
 {
   return x_spam_checker_version;
 };
