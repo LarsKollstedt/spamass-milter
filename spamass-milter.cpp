@@ -1198,14 +1198,18 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 				   whitelist checks.  Also forge a dummy Received: header
 				   because SA gets the connecting IP from the topmost one
 				*/
+				char *now;
 
-				assassin->output("X-Envelope-From: ");
-				assassin->output(assassin->from());
-				assassin->output("\r\nX-Envelope-To: ");
-				assassin->output(assassin->rcpt());
-				assassin->output("\r\nReceived: from [");
-				assassin->output(assassin->connectip());
-				assassin->output("]\r\n");
+				/* If the user did not enable the b macro in sendmail.cf
+				   just make it blank. Without this date SA can't do
+				   future/past validation on the Date: header */
+				now = smfi_getsymval(ctx, "b");
+				if (!now)
+					now="";
+
+				assassin->output("X-Envelope-From: "+assassin->from()+"\r\n");
+				assassin->output("X-Envelope-To: "+assassin->rcpt()+"\r\n");
+				assassin->output("Received: from ["+assassin->connectip()+"] by "+smfi_getsymval(ctx,"j")+"; "+now+"\r\n");
 			} 
 			catch (string& problem) {
 				throw_error(problem);
