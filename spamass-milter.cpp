@@ -294,6 +294,12 @@ main(int argc, char* argv[])
 				dontmodifyspam = true;
 				smfilter.xxfi_flags &= ~(SMFIF_CHGBODY|SMFIF_CHGHDRS);
 				break;
+			case 'p':
+				sock = strdup(optarg);
+				break;
+			case 'P':
+				pidfilename = strdup(optarg);
+				break;
 			case 'r':
 				flag_reject = true;
 				reject_score = atoi(optarg);
