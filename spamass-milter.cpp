@@ -767,17 +767,24 @@ mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 
 	/* allocate a structure to store the IP address (and SA object) in */
 	sctx = (struct context *)malloc(sizeof(*sctx));
+	if (!hostaddr)
+	{
+		debug(D_ALWAYS, "Warning - mlfi_connect got passed a NULL hostaddr!");
+		sctx->connect_ip.s_addr = 0;
+	} else
+	{
 	sctx->connect_ip = ((struct sockaddr_in *) hostaddr)->sin_addr;
+	}
 	sctx->assassin = NULL;
 	sctx->helo = NULL;
 	
 	/* store a pointer to it with setpriv */
 	smfi_setpriv(ctx, sctx);
 
-	if (ip_in_networklist(((struct sockaddr_in *) hostaddr)->sin_addr, &ignorenets))
+	if (ip_in_networklist(sctx->connect_ip, &ignorenets))
 	{
 		debug(D_NET, "%s is in our ignore list - accepting message",
-		    inet_ntoa(((struct sockaddr_in *) hostaddr)->sin_addr));
+		    inet_ntoa(sctx->connect_ip));
 		debug(D_FUNC, "mlfi_connect: exit ignore");
 		return SMFIS_ACCEPT;
 	}
