@@ -2513,7 +2513,7 @@ void parse_networklist(char *string, struct networklist *list)
 		struct in_addr net, mask;
 
 		if (list->num_nets % 10 == 0)
-			list->nets = (struct net*)realloc(list->nets, sizeof(*list->nets) * list->num_nets + 10);
+			list->nets = (struct net*)realloc(list->nets, sizeof(*list->nets) * (list->num_nets + 10));
 
 		if (!inet_aton(tnet, &net))
 		{
