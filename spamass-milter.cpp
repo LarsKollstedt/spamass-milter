@@ -301,7 +301,7 @@ main(int argc, char* argv[])
 			case 'B':
 				if (flag_bucket)
 				{
-					printf(stderr, "Can only have one -b or -B flag\n");
+					fprintf(stderr, "Can only have one -b or -B flag\n");
 					err = 1;
 					break;
 				}
