@@ -158,7 +158,6 @@ const char *const debugstrings[] = {
 
 int flag_debug = (1<<D_ALWAYS);
 bool flag_reject = false;
-bool flag_sniffuser = false;
 int reject_score = -1;
 bool dontmodifyspam = false;    // Don't modify/add body or spam results headers
 bool dontmodify = false;        // Don't add SA headers, ever.
@@ -297,6 +296,16 @@ main(int argc, char* argv[])
 				flag_sniffuser = true;
 				defaultuser = strdup(optarg);
 				break;
+			case 'b':
+				flag_bucket = true;
+				// we will modify the recipient list; if spamc returns
+				// indicating that this mail is spam, the message will be
+				// sent to <optarg>@localhost
+				smfilter.xxfi_flags |= SMFIF_ADDRCPT; // May add recipients
+				smfilter.xxfi_flags |= SMFIF_DELRCPT; // May delete recipients
+				// XXX we should probably verify that optarg is vaguely sane
+				spambucket = strdup( optarg );
+				break;
             case '?':
                 err = 1;
                 break;
@@ -395,7 +404,6 @@ main(int argc, char* argv[])
       struct stat junk;
       if (stat(sock,&junk) == 0) unlink(sock);
    }
-
 
    (void) smfi_setconn(sock);
 	if (smfi_register(smfilter) == MI_FAILURE) {
@@ -1181,6 +1189,7 @@ sfsistat
 mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 {
 	SpamAssassin* assassin = ((struct context *)smfi_getpriv(ctx))->assassin;
+	char **rcpt;
 
 	if (assassin->numrcpt() == 0)
 	{
@@ -1220,6 +1229,10 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	} else
 	{
 		assassin->set_numrcpt();
+	}
+	for( rcpt = envrcpt; *rcpt; rcpt++ ) 
+	{
+		assassin->recipients.push_back( *rcpt ); // XXX verify that this worked
 	}
 	return SMFIS_CONTINUE;
 }
