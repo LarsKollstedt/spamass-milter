@@ -2067,12 +2067,19 @@ SpamAssassin::local_user()
 string
 SpamAssassin::full_user()
 {
+  string name;
   // assuming we have a recipient in the form: <username@somehost.somedomain>
   // we return 'username@somehost.somedomain'
-  if (_rcpt[0]=='<')
-    return _rcpt.substr(1,_rcpt.find('>')-1);
+  if (_rcpt[0] == '<')
+    name = _rcpt.substr(1,_rcpt.find('>')-1);
   else
-  	return _rcpt;
+  	name = _rcpt;
+  if(name.find('@') == string::npos)
+  {
+    /* if the name had no domain part (local delivery), append the default one */
+    name = name + "@" + defaultdomain;
+  }
+  return name;
 }
 
 int
