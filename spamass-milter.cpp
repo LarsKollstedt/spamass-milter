@@ -2439,6 +2439,7 @@ void debug(int level, const char* string, ...)
 		case 1:
 			flag_debug |= (1<<D_MISC) | (1<<D_FUNC);
 			debug(D_ALWAYS, "Setting debug level to 0x%0x", flag_debug);
+			free(string);
 			return;
 		default:
 			break;
@@ -2468,6 +2469,7 @@ void debug(int level, const char* string, ...)
 		}
 	}
 	debug(D_ALWAYS, "Setting debug level to 0x%0x", flag_debug);
+	free(string);
 }
 
 /*
@@ -2846,6 +2848,7 @@ void parse_networklist(char *string, struct networklist *list)
 		list->nets[list->num_nets].netmask = mask;
 		list->num_nets++;
 	}
+	free(string);
 }
 
 int ip_in_networklist(struct in_addr ip, struct networklist *list)
