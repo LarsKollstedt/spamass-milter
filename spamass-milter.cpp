@@ -1173,7 +1173,6 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	SpamAssassin* assassin = sctx->assassin;
 	FILE *p;
 	char buf[1024];
-	list <string> newrecipients;
 
 	debug(D_FUNC, "mlfi_envrcpt: enter");
 
@@ -1188,27 +1187,31 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	{
 		while (fgets(buf, sizeof(buf), p) != NULL)
 	{
-		int i=strlen(buf);
+			int i = strlen(buf);
+			/* strip trailing EOLs */
         while (i > 0 && buf[i - 1] <= ' ')
 			i--;
 		buf[i] = '\0';
 		debug(D_RCPT, "sendmail output: %s", buf);
+			/*	From a quick scan of the sendmail source, a valid email
+				address gets printed via either
+				    "deliverable: mailer %s, host %s, user %s"
+				or  "deliverable: mailer %s, user %s"
+			*/
 		if (strstr(buf, "... deliverable: mailer "))
 		{
 			char *p=strstr(buf,", user ");
+				/* anything after ", user " is the email address */
 			debug(D_RCPT, "user: %s", p+7);
-			newrecipients.push_back(p+7);
+				assassin->expandedrcpt.push_back(p+7);
 		}
 	}
 	}
-	debug(D_RCPT, "Expanded to %d recipients", (int)newrecipients.size());
-	pclose(p);
+	debug(D_RCPT, "Total of %d actual recipients", (int)assassin->expandedrcpt.size());
+	pclose(p); p = NULL;
 
 	if (assassin->numrcpt() == 0)
 	{
-		assassin->set_numrcpt(1);
-		assassin->set_rcpt(string(envrcpt[0]));
-
 				/* Send the envelope headers as X-Envelope-From: and
 				   X-Envelope-To: so that SpamAssassin can use them in its
 				   whitelist checks.  Also forge as complete a dummy
@@ -1248,9 +1251,17 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 				assassin->output((string)"X-Envelope-To: "+assassin->rcpt()+"\r\n");
 				assassin->output((string)"Received: from "+macro_s+" ("+smfi_getsymval(ctx,"_")+") by "+smfi_getsymval(ctx,"j")+"; "+macro_b+"\r\n");
 
-	} else
-	{
+	}
+
+	/* increment RCPT TO: count */
 		assassin->set_numrcpt();
+
+	/* If we expanded to at least one user and we haven't recorded one yet,
+	   record the first one */
+	if (!assassin->expandedrcpt.empty() && (assassin->rcpt().size() == 0))
+	{
+		debug(D_RCPT, "remembering %s for spamc", assassin->expandedrcpt.front().c_str());
+		assassin->set_rcpt(assassin->expandedrcpt.front());
 	}
 
 	debug(D_RCPT, "remembering recipient %s", envrcpt[0]);
@@ -2020,7 +2031,21 @@ SpamAssassin::local_user()
 {
   // assuming we have a recipient in the form: <username@somehost.somedomain>
   // we return 'username'
+  if (_rcpt[0]=='<')
   return _rcpt.substr(1,_rcpt.find('@')-1);
+  else
+  	return _rcpt;
+}
+
+string
+SpamAssassin::full_user()
+{
+  // assuming we have a recipient in the form: <username@somehost.somedomain>
+  // we return 'username@somehost.somedomain'
+  if (_rcpt[0]=='<')
+    return _rcpt.substr(1,_rcpt.find('>')-1);
+  else
+  	return _rcpt;
 }
 
 int
