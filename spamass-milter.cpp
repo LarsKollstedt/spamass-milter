@@ -751,16 +751,17 @@ retrieve_field(const string& header, const string& field)
 sfsistat 
 mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 {
-	struct connect_info *ci;
+	struct context *sctx;
 
 	debug(D_FUNC, "mlfi_connect: enter");
 
-	/* allocate a structure to store the IP address in */
-	ci = (struct connect_info *)malloc(sizeof(*ci));
-	ci->ip = ((struct sockaddr_in *) hostaddr)->sin_addr;
+	/* allocate a structure to store the IP address (and SA object) in */
+	sctx = (struct context *)malloc(sizeof(*sctx));
+	sctx->connect_ip = ((struct sockaddr_in *) hostaddr)->sin_addr;
+	sctx->assassin = NULL;
 	
 	/* store a pointer to it with setpriv */
-	smfi_setpriv(ctx, ci);
+	smfi_setpriv(ctx, sctx);
 
 	if (ip_in_networklist(((struct sockaddr_in *) hostaddr)->sin_addr, &ignorenets))
 	{
@@ -1120,7 +1121,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 sfsistat
 mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 {
-	SpamAssassin* assassin = static_cast<SpamAssassin*>(smfi_getpriv(ctx));
+	SpamAssassin* assassin = ((struct context *)smfi_getpriv(ctx))->assassin;
 
 	if (assassin->numrcpt() == 0)
 	{
