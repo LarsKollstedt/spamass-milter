@@ -201,6 +201,8 @@ main(int argc, char* argv[])
     openlog("spamass-milter", LOG_PID, LOG_MAIL);
 
 
+   openlog("spamass-milter", LOG_PID, LOG_MAIL);
+
     /* Process command line options */
     while ((c = getopt(argc, argv, args)) != -1) {
         switch (c) {
@@ -394,7 +396,6 @@ main(int argc, char* argv[])
       if (stat(sock,&junk) == 0) unlink(sock);
    }
 
-   openlog("spamass-milter", LOG_PID, LOG_MAIL);
 
    (void) smfi_setconn(sock);
 	if (smfi_register(smfilter) == MI_FAILURE) {
@@ -730,6 +731,25 @@ retrieve_field(const string& header, const string& field)
 // }}}
 
 // {{{ MLFI callbacks
+
+sfsistat 
+mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
+{
+	debug(1, "mlfi_connect: enter");
+
+	if (ip_in_networklist(((struct sockaddr_in *) hostaddr)->sin_addr, &ignorenets))
+	{
+		debug(1, "%s is in our ignore list - accepting message",
+		    inet_ntoa(((struct sockaddr_in *) hostaddr)->sin_addr));
+		debug(1, "mlfi_connect: exit");
+		return SMFIS_ACCEPT;
+	}
+	// Tell Milter to continue
+	debug(1, "mlfi_connect: exit");
+
+	return SMFIS_CONTINUE;
+}
+
 
 //
 // Gets called once when a client connects to sendmail
@@ -2621,6 +2641,80 @@ void closeall(int fd)
 	while (fd < fdlimit) 
 		close(fd++); 
 }
+
+void parse_networklist(char *string, struct networklist *list)
+{
+	char *token;
+
+	while ((token = strsep(&string, ", ")))
+	{
+		char *tnet = strsep(&token, "/");
+		char *tmask = token;
+		struct in_addr net, mask;
+
+		if (list->num_nets % 10 == 0)
+			list->nets = (struct network*)realloc(list->nets, sizeof(*list->nets) * list->num_nets + 10);
+
+		if (!inet_aton(tnet, &net))
+		{
+			fprintf(stderr, "Could not parse \"%s\" as a network\n", tnet);
+			exit(1);
+		}
+
+		if (tmask)
+		{
+			if (strchr(tmask, '.') == NULL)
+			{
+				/* CIDR */
+				unsigned int bits;
+				int ret;
+				ret = sscanf(tmask, "%u", &bits);
+				if (ret != 1 || bits > 32)
+				{
+					fprintf(stderr,"%s: bad CIDR value", tmask);
+					exit(1);
+				}
+				mask.s_addr = htonl(~((1L << (32 - bits)) - 1) & 0xffffffff);
+			} else if (!inet_aton(tmask, &mask))
+			{
+				fprintf(stderr, "Could not parse \"%s\" as a netmask\n", tmask);
+				exit(1);
+			}
+		} else
+			mask.s_addr = 0xffffffff;
+
+		{
+			char *snet = strdup(inet_ntoa(net));
+			debug(1, "Adding %s/%s to network list", snet, inet_ntoa(mask));
+			free(snet);
+		}
+
+		net.s_addr = net.s_addr & mask.s_addr;
+		list->nets[list->num_nets].network = net;
+		list->nets[list->num_nets].netmask = mask;
+		list->num_nets++;
+	}
+}
+
+int ip_in_networklist(struct in_addr ip, struct networklist *list)
+{
+	int i;
+
+	debug(2, "Checking %s against:", inet_ntoa(ip));
+	for (i = 0; i < list->num_nets; i++)
+	{
+		debug(2, "%s", inet_ntoa(list->nets[i].network));
+		debug(2, "/%s", inet_ntoa(list->nets[i].netmask));
+		if ((ip.s_addr & list->nets[i].netmask.s_addr) == list->nets[i].network.s_addr)
+        {
+        	debug(2, "Hit!");
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 
 // }}}
 // vim6:ai:noexpandtab
