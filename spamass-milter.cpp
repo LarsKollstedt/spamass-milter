@@ -283,7 +283,7 @@ main(int argc, char* argv[])
 				spamdhost = strdup(optarg);
 				break;
 			case 'i':
-				debug(1, "Parsing ignore list");
+				debug(D_MISC, "Parsing ignore list");
 				parse_networklist(optarg, &ignorenets);
 				break;
 			case 'm':
@@ -744,17 +744,17 @@ retrieve_field(const string& header, const string& field)
 sfsistat 
 mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 {
-	debug(1, "mlfi_connect: enter");
+	debug(D_FUNC, "mlfi_connect: enter");
 
 	if (ip_in_networklist(((struct sockaddr_in *) hostaddr)->sin_addr, &ignorenets))
 	{
-		debug(1, "%s is in our ignore list - accepting message",
+		debug(D_NET, "%s is in our ignore list - accepting message",
 		    inet_ntoa(((struct sockaddr_in *) hostaddr)->sin_addr));
-		debug(1, "mlfi_connect: exit");
+		debug(D_FUNC, "mlfi_connect: exit");
 		return SMFIS_ACCEPT;
 	}
 	// Tell Milter to continue
-	debug(1, "mlfi_connect: exit");
+	debug(D_FUNC, "mlfi_connect: exit");
 
 	return SMFIS_CONTINUE;
 }
@@ -1252,7 +1252,7 @@ mlfi_eoh(SMFICTX* ctx)
        };
      }
 
-  debug(1, "mlfi_eoh: enter");
+  debug(D_FUNC, "mlfi_eoh: enter");
 
   // Check if the SPAMC program has already been run, if not we run it.
   if ( !(assassin->connected) )
@@ -2184,7 +2184,56 @@ void debug(enum debuglevel level, const char* fmt, ...)
 
 void debug(int level, const char* string, ...)
 {
-	if (flag_debug >= level)
+	char *token;
+
+	/* handle the old numeric values too */
+	switch(atoi(string))
+	{
+		case 3:
+			flag_debug |= (1<<D_UORI) | (1<<D_STR);
+		case 2:
+			flag_debug |= (1<<D_POLL);
+		case 1:
+			flag_debug |= (1<<D_MISC) | (1<<D_FUNC);
+			debug(D_ALWAYS, "Setting debug level to 0x%0x", flag_debug);
+			return;
+		default:
+			break;
+	}
+
+	while ((token = strsep(&string, ", ")))
+	{
+		int i;
+		for (i=0; debugstrings[i]; i++)
+		{
+			if(strcasecmp(token, "ALL")==0)
+			{
+				flag_debug = (1<<D_MAX)-1;
+				break;
+			}
+			if(strcasecmp(token, debugstrings[i])==0)
+			{
+				flag_debug |= (1<<i);
+				break;
+			}
+		}
+
+		if (!debugstrings[i])
+		{
+			fprintf(stderr, "Invalid debug token \"%s\"\n", token);
+			exit(1);
+		}
+	}
+	debug(D_ALWAYS, "Setting debug level to 0x%0x", flag_debug);
+}
+
+/*
+   Output a line to syslog using print format, but only if the appropriate
+   debug level is set.  The D_ALWAYS level is always enabled.
+*/
+void debug(enum debuglevel level, const char* string, ...)
+{
+	if ((1<<level) & flag_debug)
 	{
 #if defined(HAVE_VSYSLOG)
 	    va_list vl;
@@ -2545,7 +2594,7 @@ void parse_networklist(char *string, struct networklist *list)
 
 		{
 			char *snet = strdup(inet_ntoa(net));
-			debug(1, "Adding %s/%s to network list", snet, inet_ntoa(mask));
+			debug(D_MISC, "Adding %s/%s to network list", snet, inet_ntoa(mask));
 			free(snet);
 		}
 
@@ -2560,14 +2609,14 @@ int ip_in_networklist(struct in_addr ip, struct networklist *list)
 {
 	int i;
 
-	debug(2, "Checking %s against:", inet_ntoa(ip));
+	debug(D_NET, "Checking %s against:", inet_ntoa(ip));
 	for (i = 0; i < list->num_nets; i++)
 	{
-		debug(2, "%s", inet_ntoa(list->nets[i].network));
-		debug(2, "/%s", inet_ntoa(list->nets[i].netmask));
+		debug(D_NET, "%s", inet_ntoa(list->nets[i].network));
+		debug(D_NET, "/%s", inet_ntoa(list->nets[i].netmask));
 		if ((ip.s_addr & list->nets[i].netmask.s_addr) == list->nets[i].network.s_addr)
         {
-        	debug(2, "Hit!");
+        	debug(D_NET, "Hit!");
 			return 1;
 		}
 	}
