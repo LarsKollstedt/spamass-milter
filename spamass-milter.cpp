@@ -194,7 +194,7 @@ main(int argc, char* argv[])
 	std::set_terminate (__gnu_cxx::__verbose_terminate_handler);
 #endif
 
-   openlog("spamass-milter", LOG_PID, LOG_MAIL);
+    openlog("spamass-milter", LOG_PID, LOG_MAIL);
 
 
     /* Process command line options */
@@ -203,42 +203,42 @@ main(int argc, char* argv[])
             case 'a':
                 auth = true;
                 break;
-			case 'f':
-				dofork = true;
-				break;
-			case 'd':
-				parse_debuglevel(optarg);
-				break;
-			case 'D':
-				spamdhost = strdup(optarg);
-				break;
-			case 'e':
-				flag_full_email = true;
-				defaultdomain = strdup(optarg);
-				break;
-			case 'i':
-				debug(D_MISC, "Parsing ignore list");
-				parse_networklist(optarg, &ignorenets);
-				break;
-			case 'm':
-				dontmodifyspam = true;
-				smfilter.xxfi_flags &= ~SMFIF_CHGBODY;
-				break;
-			case 'M':
-				dontmodify = true;
-				dontmodifyspam = true;
-				smfilter.xxfi_flags &= ~(SMFIF_CHGBODY|SMFIF_CHGHDRS);
-				break;
-			case 'p':
-				sock = strdup(optarg);
-				break;
-			case 'P':
-				pidfilename = strdup(optarg);
-				break;
-			case 'r':
-				flag_reject = true;
-				reject_score = atoi(optarg);
-				break;
+            case 'f':
+                dofork = true;
+                break;
+            case 'd':
+                parse_debuglevel(optarg);
+                break;
+            case 'D':
+                spamdhost = strdup(optarg);
+                break;
+            case 'e':
+                flag_full_email = true;
+                defaultdomain = strdup(optarg);
+                break;
+            case 'i':
+                debug(D_MISC, "Parsing ignore list");
+                parse_networklist(optarg, &ignorenets);
+                break;
+            case 'm':
+                dontmodifyspam = true;
+                smfilter.xxfi_flags &= ~SMFIF_CHGBODY;
+                break;
+            case 'M':
+                dontmodify = true;
+                dontmodifyspam = true;
+                smfilter.xxfi_flags &= ~(SMFIF_CHGBODY|SMFIF_CHGHDRS);
+                break;
+            case 'p':
+                sock = strdup(optarg);
+                break;
+            case 'P':
+                pidfilename = strdup(optarg);
+                break;
+            case 'r':
+                flag_reject = true;
+                reject_score = atoi(optarg);
+                break;
             case 'S':
                 path_to_sendmail = strdup(optarg);
                 break;
@@ -248,39 +248,39 @@ main(int argc, char* argv[])
             case 'R':
                 rejecttext = strdup (optarg);
                 break;
-			case 'u':
-				flag_sniffuser = true;
-				defaultuser = strdup(optarg);
-				break;
-			case 'b':
-			case 'B':
-				if (flag_bucket)
-				{
-					fprintf(stderr, "Can only have one -b or -B flag\n");
-					err = 1;
-					break;
-				}
-				flag_bucket = true;
-				if (c == 'b')
-				{
-					flag_bucket_only = true;
-					smfilter.xxfi_flags |= SMFIF_DELRCPT; // May delete recipients
-				}
-				// we will modify the recipient list; if spamc returns
-				// indicating that this mail is spam, the message will be
-				// sent to <optarg>@localhost
-				smfilter.xxfi_flags |= SMFIF_ADDRCPT; // May add recipients
-				// XXX we should probably verify that optarg is vaguely sane
-				spambucket = strdup( optarg );
-				break;
-			case 'x':
-				flag_expand = true;
-				break;
-			case '?':
-				err = 1;
-				break;
-		}
-	}
+            case 'u':
+                flag_sniffuser = true;
+                defaultuser = strdup(optarg);
+                break;
+            case 'b':
+            case 'B':
+                if (flag_bucket)
+                {
+                    fprintf(stderr, "Can only have one -b or -B flag\n");
+                    err = 1;
+                    break;
+                }
+                flag_bucket = true;
+                if (c == 'b')
+                {
+                    flag_bucket_only = true;
+                    smfilter.xxfi_flags |= SMFIF_DELRCPT; // May delete recipients
+                }
+                // we will modify the recipient list; if spamc returns
+                // indicating that this mail is spam, the message will be
+                // sent to <optarg>@localhost
+                smfilter.xxfi_flags |= SMFIF_ADDRCPT; // May add recipients
+                // XXX we should probably verify that optarg is vaguely sane
+                spambucket = strdup( optarg );
+                break;
+            case 'x':
+                flag_expand = true;
+                break;
+            case '?':
+                err = 1;
+                break;
+        }
+    }
 
    if (flag_full_email && !flag_sniffuser)
    {
@@ -335,37 +335,37 @@ main(int argc, char* argv[])
         rejectcode = strdup ("5.7.1");
     }
 
-	if (pidfilename)
-	{
-		unlink(pidfilename);
-		pidfile = fopen(pidfilename,"w");
-		if (!pidfile)
-		{
-			fprintf(stderr, "Could not open pidfile: %s\n", strerror(errno));
-			exit(1);
-		}
-		/* leave the file open through the fork, since we don't know our pid
-		   yet
-		*/
-	}
+    if (pidfilename)
+    {
+        unlink(pidfilename);
+        pidfile = fopen(pidfilename,"w");
+        if (!pidfile)
+        {
+            fprintf(stderr, "Could not open pidfile: %s\n", strerror(errno));
+            exit(1);
+        }
+        /* leave the file open through the fork, since we don't know our pid
+           yet
+        */
+    }
 
 
-	if (dofork == true) 
-	{
-		if (daemon(0, 0) == -1)
-		{
+    if (dofork == true) 
+    {
+        if (daemon(0, 0) == -1)
+        {
             fprintf(stderr, "daemon() failed: %s\n", strerror(errno));
             exit(1);
-		}
-	}
-	
-	if (pidfile)
-	{
-		fprintf(pidfile, "%ld\n", (long)getpid());
-		fclose(pidfile);
-		pidfile = NULL;
-	}	
-	
+        }
+    }
+    
+    if (pidfile)
+    {
+        fprintf(pidfile, "%ld\n", (long)getpid());
+        fclose(pidfile);
+        pidfile = NULL;
+    }    
+    
    {
       struct stat junk;
       if (stat(sock,&junk) == 0) unlink(sock);
@@ -546,6 +546,19 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
   update_or_insert(assassin, ctx, assassin->spam_level(), &SpamAssassin::set_spam_level, "X-Spam-Level");
   update_or_insert(assassin, ctx, assassin->spam_checker_version(), &SpamAssassin::set_spam_checker_version, "X-Spam-Checker-Version");
 
+  // X-Spam-Checker-Version header //
+  // find it:
+  old = assassin->set_spam_checker_version(retrieve_field(assassin->d().substr(0, eoh), 
+							  string("X-Spam-Checker-Version")));
+  
+  // change if old one was present, append if non-null
+  if (old > 0)
+    smfi_chgheader(ctx,"X-Spam-Checker-Version",1,assassin->spam_checker_version().size() > 0 ? 
+		   const_cast<char*>(assassin->spam_checker_version().c_str()) : NULL );
+  else if (assassin->spam_checker_version().size()>0)
+    smfi_addheader(ctx, "X-Spam-Checker-Version", 
+		   const_cast<char*>(assassin->spam_checker_version().c_str()));
+  
   // 
   // If SpamAssassin thinks it is spam, replace
   //  Subject:
@@ -1640,6 +1653,12 @@ SpamAssassin::spam_level()
 }
 
 string& 
+spam_checker_version()
+{
+  return x_spam_checker_version;
+};
+
+string& 
 SpamAssassin::content_type()
 {
   return _content_type;
@@ -1770,6 +1789,14 @@ SpamAssassin::set_spam_level(const string& val)
   x_spam_level = val;
   return (old);
 }
+
+string::size_type
+SpamAssassin::set_spam_checker_version(const string& val)
+{
+  string::size_type old = x_spam_checker_version.size();
+  x_spam_checker_version = val;
+  return (old);
+};
 
 string::size_type
 SpamAssassin::set_content_type(const string& val)
@@ -2070,36 +2097,36 @@ void parse_networklist(char *string, struct networklist *list)
 		if (inet_pton(AF_INET, tnet, &net))
 		{
 			struct in_addr mask;
-
-		if (tmask)
-		{
-			if (strchr(tmask, '.') == NULL)
+			
+			if (tmask)
 			{
-				/* CIDR */
-				unsigned int bits;
-				int ret;
-				ret = sscanf(tmask, "%u", &bits);
-				if (ret != 1 || bits > 32)
+				if (strchr(tmask, '.') == NULL)
 				{
-					fprintf(stderr,"%s: bad CIDR value", tmask);
+					/* CIDR */
+					unsigned int bits;
+					int ret;
+					ret = sscanf(tmask, "%u", &bits);
+					if (ret != 1 || bits > 32)
+					{
+						fprintf(stderr,"%s: bad CIDR value", tmask);
+						exit(1);
+					}
+					mask.s_addr = htonl(~((1L << (32 - bits)) - 1) & 0xffffffff);
+				} else if (!inet_pton(AF_INET6, tmask, &mask))
+				{
+					fprintf(stderr, "Could not parse \"%s\" as a netmask\n", tmask);
 					exit(1);
 				}
-				mask.s_addr = htonl(~((1L << (32 - bits)) - 1) & 0xffffffff);
-				} else if (!inet_pton(AF_INET6, tmask, &mask))
+			} else
+				mask.s_addr = 0xffffffff;
+
 			{
-				fprintf(stderr, "Could not parse \"%s\" as a netmask\n", tmask);
-				exit(1);
+				char *snet = strdup(inet_ntoa(net));
+				debug(D_MISC, "Adding %s/%s to network list", snet, inet_ntoa(mask));
+				free(snet);
 			}
-		} else
-			mask.s_addr = 0xffffffff;
 
-		{
-			char *snet = strdup(inet_ntoa(net));
-			debug(D_MISC, "Adding %s/%s to network list", snet, inet_ntoa(mask));
-			free(snet);
-		}
-
-		net.s_addr = net.s_addr & mask.s_addr;
+			net.s_addr = net.s_addr & mask.s_addr;
 			list->nets[list->num_nets].net4.af = AF_INET;
 			list->nets[list->num_nets].net4.network = net;
 			list->nets[list->num_nets].net4.netmask = mask;
@@ -2138,7 +2165,7 @@ int ip_in_networklist(struct sockaddr *addr, struct networklist *list)
 
 	if (list->num_nets == 0)
 		return 0;
-		
+	
 	//debug(D_NET, "Checking %s against:", inet_ntoa(ip));
 	for (i = 0; i < list->num_nets; i++)
 	{
@@ -2149,10 +2176,10 @@ int ip_in_networklist(struct sockaddr *addr, struct networklist *list)
 			debug(D_NET, "%s", inet_ntoa(list->nets[i].net4.network));
 			debug(D_NET, "/%s", inet_ntoa(list->nets[i].net4.netmask));
 			if ((ip.s_addr & list->nets[i].net4.netmask.s_addr) == list->nets[i].net4.network.s_addr)
-        {
-        	debug(D_NET, "Hit!");
-			return 1;
-		}
+			{
+				debug(D_NET, "Hit!");
+				return 1;
+			}
 		} else if (list->nets[i].net.af == AF_INET6 && addr->sa_family == AF_INET6)
 		{
 			u_int8_t *ip = ((struct sockaddr_in6 *)addr)->sin6_addr.s6_addr;
