@@ -286,8 +286,13 @@ main(int argc, char* argv[])
 				parse_networklist(optarg, &ignorenets);
 				break;
 			case 'm':
+				dontmodifyspam = true;
+				smfilter.xxfi_flags &= ~SMFIF_CHGBODY;
+				break;
+			case 'M':
 				dontmodify = true;
-				// smfilter.xxfi_flags &= ~SMFIF_CHGBODY;
+				dontmodifyspam = true;
+				smfilter.xxfi_flags &= ~(SMFIF_CHGBODY|SMFIF_CHGHDRS);
 				break;
 			case 'r':
 				flag_reject = true;
@@ -489,8 +494,11 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
   if (bob == string::npos)
   	bob = assassin->d().size();
 
+  if (!dontmodify)
+  {
   update_or_insert(assassin, ctx, assassin->spam_flag(), &SpamAssassin::set_spam_flag, "X-Spam-Flag");
   update_or_insert(assassin, ctx, assassin->spam_status(), &SpamAssassin::set_spam_status, "X-Spam-Status");
+  }
 
   /* Summarily reject the message if SA tagged it, or if we have a minimum
      score, reject if it exceeds that score. */
@@ -583,10 +591,13 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
         }
   }
 
+  if (!dontmodify)
+  {
   update_or_insert(assassin, ctx, assassin->spam_report(), &SpamAssassin::set_spam_report, "X-Spam-Report");
   update_or_insert(assassin, ctx, assassin->spam_prev_content_type(), &SpamAssassin::set_spam_prev_content_type, "X-Spam-Prev-Content-Type");
   update_or_insert(assassin, ctx, assassin->spam_level(), &SpamAssassin::set_spam_level, "X-Spam-Level");
   update_or_insert(assassin, ctx, assassin->spam_checker_version(), &SpamAssassin::set_spam_checker_version, "X-Spam-Checker-Version");
+  }
 
   // X-Spam-Level header //
   // find it:
