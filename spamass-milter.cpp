@@ -178,6 +178,10 @@ bool flag_expand = false;	/* alias/virtusertable expansion */
 bool warnedmacro = false;	/* have we logged that we couldn't fetch a macro? */
 bool auth = false;		/* don't scan authenticated users */
 
+#if defined(__FreeBSD__) /* popen bug - see PR bin/50770 */
+static pthread_mutex_t popen_mutex = PTHREAD_MUTEX_INITIALIZER;
+#endif
+
 // {{{ main()
 
 int
@@ -1189,18 +1193,36 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	if (flag_expand)
 	{
 	/* open a pipe to sendmail so we can do address expansion */
-	sprintf(buf, "%s -bv \"%s\" 2>&1", SENDMAIL, envrcpt[0]);
+
+#if defined(HAVE_ASPRINTF)
+		char *buf;
+#else
+		char buf[1024];
+#endif
+		char *fmt="%s -bv \"%s\" 2>&1";
+
+#if defined(HAVE_ASPRINTF)
+		asprintf(&buf, fmt, SENDMAIL, envrcpt[0]);
+#else
+#if defined(HAVE_SNPRINTF)
+		snprintf(buf, sizeof(buf)-1, fmt, SENDMAIL, envrcpt[0]);
+#else
+		/* XXX possible buffer overflow here */
+		sprintf(buf, fmt, SENDMAIL, envrcpt[0]);
+#endif
+#endif
+
 	debug(D_RCPT, "calling %s", buf);
+
 #if defined(__FreeBSD__) /* popen bug - see PR bin/50770 */
-	debug(D_FUNC, "locking mutex");
 	rv = pthread_mutex_lock(&popen_mutex);
 	if (rv)
 	{
 		debug(D_ALWAYS, "Could not lock popen mutex: %s", strerror(rv));
 		abort();
 	}		
-	debug(D_FUNC, "locked mutex");
 #endif
+
 	p = popen(buf, "r");
 	if (!p)
 	{
@@ -1232,14 +1254,15 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	pclose(p); p = NULL;
 		}
 #if defined(__FreeBSD__)
-	debug(D_FUNC, "unlocking mutex");
 	rv = pthread_mutex_unlock(&popen_mutex);
 	if (rv)
 	{
 		debug(D_ALWAYS, "Could not unlock popen mutex: %s", strerror(rv));
 		abort();
 	}		
-	debug(D_FUNC, "unlocked mutex");
+#endif
+#if defined(HAVE_ASPRINTF)
+		free(buf);
 #endif
 	} else
 	{
