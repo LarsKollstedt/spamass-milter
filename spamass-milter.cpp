@@ -276,6 +276,9 @@ main(int argc, char* argv[])
             case 'x':
                 flag_expand = true;
                 break;
+			case 'm':
+				dontmodify = true;
+				break;
             case '?':
                 err = 1;
                 break;
