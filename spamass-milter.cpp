@@ -1296,6 +1296,19 @@ mlfi_eoh(SMFICTX* ctx)
 
   debug(1, "mlfi_eoh: enter");
 
+  // Check if the SPAMC program has already been run, if not we run it.
+  if ( !(assassin->connected) )
+     {
+       try {
+         assassin->connected = 1; // SPAMC is getting ready to run
+         assassin->Connect();
+       } 
+       catch (string& problem) {
+         throw_error(problem);
+         return SMFIS_TEMPFAIL;
+       };
+     }
+
   try {
     // add blank line between header and body
     assassin->output("\n\n",2);
