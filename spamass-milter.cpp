@@ -1187,6 +1187,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	FILE *p;
 	char buf[1024];
 	int rv;
+#endif
 
 	debug(D_FUNC, "mlfi_envrcpt: enter");
 
