@@ -1173,6 +1173,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	SpamAssassin* assassin = sctx->assassin;
 	FILE *p;
 	char buf[1024];
+	list <string> newrecipients;
 
 	debug(D_FUNC, "mlfi_envrcpt: enter");
 
@@ -1186,7 +1187,6 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	} else
 	while (fgets(buf,sizeof(buf),p) != NULL)
 	{
-		list <string> newrecipients;
 		int i=strlen(buf);
         while (i > 0 && buf[i - 1] <= ' ')
 			i--;
@@ -1198,8 +1198,8 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 			debug(D_RCPT, "user: %s", p+7);
 			newrecipients.push_back(p+7);
 		}
-		debug(D_RCPT, "Expanded to %d recipients", (int)newrecipients.size());
 	}
+	debug(D_RCPT, "Expanded to %d recipients", (int)newrecipients.size());
 	pclose(p);
 
 	if (assassin->numrcpt() == 0)
