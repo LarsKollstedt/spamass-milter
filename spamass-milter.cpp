@@ -1631,6 +1631,7 @@ SpamAssassin::SpamAssassin():
   running(false),
   connected(false),
   running(false),
+  connected(false),
   _numrcpt(0)
 {
 }
