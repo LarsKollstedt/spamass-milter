@@ -1763,13 +1763,13 @@ string&
 SpamAssassin::spam_checker_version()
 {
   return x_spam_checker_version;
-};
+}
 
 string& 
 SpamAssassin::spam_level()
 {
   return x_spam_level;
-};
+}
 
 string& 
 SpamAssassin::content_type()
@@ -1943,7 +1943,7 @@ SpamAssassin::set_spam_checker_version(const string& val)
   string::size_type old = x_spam_checker_version.size();
   x_spam_checker_version = val;
   return (old);
-};
+}
 
 string::size_type
 SpamAssassin::set_spam_level(const string& val)
@@ -1951,7 +1951,7 @@ SpamAssassin::set_spam_level(const string& val)
   string::size_type old = x_spam_level.size();
   x_spam_level = val;
   return (old);
-};
+}
 
 string::size_type
 SpamAssassin::set_content_type(const string& val)
