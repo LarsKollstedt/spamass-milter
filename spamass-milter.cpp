@@ -2097,7 +2097,7 @@ SpamAssassin::local_user()
   if (_rcpt[0]=='<')
   return _rcpt.substr(1,_rcpt.find('@')-1);
   else
-  	return _rcpt.substr(0, _rcpt.find_first_of('@+'));
+  	return _rcpt.substr(0, _rcpt.find_first_of("@+"));
 }
 
 string
