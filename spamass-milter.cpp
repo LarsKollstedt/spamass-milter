@@ -158,6 +158,7 @@ const char *const debugstrings[] = {
 
 int flag_debug = (1<<D_ALWAYS);
 bool flag_reject = false;
+bool flag_sniffuser = false;
 int reject_score = -1;
 bool dontmodifyspam = false;    // Don't modify/add body or spam results headers
 bool dontmodify = false;        // Don't add SA headers, ever.
@@ -289,6 +290,10 @@ main(int argc, char* argv[])
 			case 'r':
 				flag_reject = true;
 				reject_score = atoi(optarg);
+				break;
+			case 'u':
+				flag_sniffuser = true;
+				defaultuser = strdup(optarg);
 				break;
             case '?':
                 err = 1;
@@ -1129,6 +1134,28 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 }
 
 //
+// Gets called once for each recipient
+//
+// stores the first recipient in the spamassassin object and
+// discards the rest, keeping track of the number of recipients.
+//
+sfsistat
+mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
+{
+	SpamAssassin* assassin = static_cast<SpamAssassin*>(smfi_getpriv(ctx));
+
+	if (assassin->numrcpt() == 0)
+	{
+		assassin->set_numrcpt(1);
+		assassin->set_rcpt(string(envrcpt[0]));
+	} else
+	{
+		assassin->set_numrcpt();
+	}
+	return SMFIS_CONTINUE;
+}
+
+//
 // Gets called repeatedly for all header fields
 //
 // assembles the headers and passes them on to the SpamAssassin client
@@ -1162,6 +1189,20 @@ mlfi_header(SMFICTX* ctx, char* headerf, char* headerv)
          return SMFIS_TEMPFAIL;
        };
      }
+
+  // Check if the SPAMC program has already been run, if not we run it.
+  if ( !(assassin->connected) )
+     {
+       try {
+         assassin->connected = 1; // SPAMC is getting ready to run
+         assassin->Connect();
+       } 
+       catch (string& problem) {
+         throw_error(problem);
+         return SMFIS_TEMPFAIL;
+       };
+     }
+ 
 
   // Is it a "X-Spam-" header field?
   if ( cmp_nocase_partial("X-Spam-", headerf) == 0 )
@@ -1850,6 +1891,40 @@ SpamAssassin::set_numrcpt(const int val)
   return _numrcpt;
 }
 
+string&
+SpamAssassin::rcpt()
+{
+  return _rcpt;
+}
+
+string
+SpamAssassin::local_user()
+{
+  // assuming we have a recipient in the form: <username@somehost.somedomain>
+  // we return 'username'
+  return _rcpt.substr(1,_rcpt.find('@')-1);
+}
+
+int
+SpamAssassin::numrcpt()
+{
+  return _numrcpt;
+}
+
+int
+SpamAssassin::set_numrcpt()
+{
+  _numrcpt++;
+  return _numrcpt;
+}
+
+int
+SpamAssassin::set_numrcpt(const int val)
+{
+  _numrcpt = val;
+  return _numrcpt;
+}
+
 //
 // set the values of the different SpamAssassin
 // fields in our element. Returns former size of field
@@ -1956,6 +2031,14 @@ SpamAssassin::set_connectip(const string& val)
   string::size_type old = _connectip.size();
   _connectip = val;
   return (old);
+}
+
+string::size_type
+SpamAssassin::set_rcpt(const string& val)
+{
+  string::size_type old = _rcpt.size();
+  _rcpt = val;
+  return (old);  
 }
 
 //
