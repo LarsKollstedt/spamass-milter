@@ -125,6 +125,7 @@ AC_CHECK_FUNCS([asprintf snprintf])
 AC_SEARCH_LIBS(gethostbyname, nsl)
 AC_SEARCH_LIBS(connect, socket)
 AC_SEARCH_LIBS(inet_aton, resolv)
+AC_REPLACE_FUNCS(strsep)
 
 # Check for functions and verify that the system provides a prototype for them.
 # Switch to C linkage.  Though the autoconf manual claims it does
