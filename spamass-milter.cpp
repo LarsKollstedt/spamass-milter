@@ -781,7 +781,7 @@ mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	{
 		/* not a socket; probably a local user calling sendmail directly */
 		/* set to 127.0.0.1 */
-		sctx->connect_ip.s_addr = inet_htonl(INADDR_LOOPBACK);
+		sctx->connect_ip.s_addr = htonl(INADDR_LOOPBACK);
 	} else
 	{
 	sctx->connect_ip = ((struct sockaddr_in *) hostaddr)->sin_addr;
