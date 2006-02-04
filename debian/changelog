@@ -1,0 +1,85 @@
+spamass-milter (0.3.0-2) unstable; urgency=low
+
+  * Add -I option to stop delaying mail from authenticated users. Thanks to
+    Paul Traina for the patch. (closes: #301755)
+  * Delete config.h, config.log, and config.status in the clean target
+  * Update standards version (no changes)
+
+ -- Don Armstrong <don@debian.org>  Fri, 23 Dec 2005 05:12:38 -0800
+
+spamass-milter (0.3.0-1) unstable; urgency=low
+
+  * New upstream release (closes: #295586)
+  * Include sendmail.mc in the reportbug script
+  * Stop using cdbs
+  * Specify path to spamc and sendmail directly to eliminate (useless)
+    build dependencies on spamc and sendmail
+
+ -- Don Armstrong <don@debian.org>  Tue,  1 Mar 2005 18:20:21 -0800
+
+spamass-milter (0.2.0-7) unstable; urgency=low
+
+  * Updates to deal with changes in spamassassin 3.0
+    - hits is now score in the X-Spam-Status: header (closes: #273798)
+  * Parse user+detail@foo.com addresses correctly (load preferences of the
+    user user instead of the user+detail user.)
+  * Uploaded by Stephen Gran <sgran@debian.org>
+
+ -- Don Armstrong <don@donarmstrong.com>  Thu, 30 Sep 2004 13:56:17 -0700
+
+spamass-milter (0.2.0-6) unstable; urgency=low
+
+  * Add patch from cvs to create pidfile and use it in init script to
+    avoid start-stop-daemon needing /proc (closes: #216455)
+  * Use cdbs
+    - Add lintian override as the config.* patches aren't applied until buildtime
+  * Migrate patches to debian/patches
+  * Init scripts now send the right signal to stop spamass-milter
+  * Uploaded by Stephen Gran <sgran@debian.org>
+  
+ -- Don Armstrong <don@donarmstrong.com>  Tue, 24 Feb 2004 10:09:09 -0800
+
+spamass-milter (0.2.0-5) unstable; urgency=low
+
+  * Changed recommends: spamd to spamassassin (closes: #204139)
+  * Fix typo in init script (oknod should be oknodo) (closes: #204301)
+  * Add debugging howto section to README.Debian
+  * Uploaded by Stephen Gran <sgran@debian.org>
+  
+ -- Don Armstrong <don@donarmstrong.com>  Fri, 29 Aug 2003 18:00:05 -0700
+
+spamass-milter (0.2.0-4) unstable; urgency=low
+
+  * Add missing build-depends on groff
+    - Fixes FTBFS on autobuilders.
+  
+  * Update Standards Version to 3.6.0
+
+ -- Don Armstrong <don@donarmstrong.com>  Wed, 30 Jul 2003 01:32:00 -0700
+
+spamass-milter (0.2.0-3) unstable; urgency=low
+
+  * Patch by Valentin Chopov <valentin@valcho.net> to fix segfaults on
+    empty message bodies. [The "bob" patch]
+
+ -- Don Armstrong <don@donarmstrong.com>  Mon, 21 Jul 2003 12:48:02 -0700
+
+spamass-milter (0.2.0-2) unstable; urgency=low
+
+  * Removed bashism from /etc/init.d/spamass-milter [s/source/./] as
+    suggested and noticed by Joost van Baal <j.e.vanbaal@uvt.nl>.
+
+ -- Don Armstrong <don@donarmstrong.com>  Sun, 20 Jul 2003 01:13:18 -0700
+
+spamass-milter (0.2.0-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Don Armstrong <don@donarmstrong.com>  Thu, 26 Jun 2003 20:38:15 -0400
+
+spamass-milter (0.1.3a-1) unstable; urgency=low
+  
+  * Initial debian packaging
+
+ -- Don Armstrong <don@donarmstrong.com>  Thu, 30 Jan 2003 01:24:44 -0500
+

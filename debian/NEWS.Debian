@@ -1,0 +1,9 @@
+spamass-milter (0.3.0-2) unstable; urgency=low
+
+  * spamass-milter now has a (currently not available upstream) -I option
+    which will allow authenticated senders to skip SA checks in outbound
+    mail. As this option is not yet integrated in upstream, the actually
+    command line option may change in the future. You Have Been Warned.
+
+ -- Don Armstrong <don@debian.org>  Fri, 23 Dec 2005 03:28:31 -0800
+

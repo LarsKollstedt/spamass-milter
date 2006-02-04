@@ -1,0 +1,23 @@
+--- spamass-milter.1.in.orig	2003-06-25 09:17:34.000000000 -0700
++++ spamass-milter.1.in	2004-02-18 20:55:37.000000000 -0800
+@@ -12,6 +12,7 @@
+ .Op Fl d Ar debugflags
+ .Op Fl D Ar host
+ .Op Fl f
++.Op Fl P Ar pidfile
+ .Op Fl i Ar networks
+ .Op Fl m
+ .Op Fl r Ar nn
+@@ -88,6 +89,12 @@
+ Causes
+ .Nm
+ to fork into the background.
++.It Fl P Ar pidfile
++Causes
++.Nm
++to write out it's pid to pidfile.
++.Ar pidfile
++is the name of the pidfile to write out.
+ .It Fl i Ar networks
+ Ignores messages if the originating IP is in the network(s) listed. 
+ The message will be passed through without calling SpamAssassin at all.

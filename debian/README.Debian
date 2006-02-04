@@ -1,0 +1,74 @@
+--------------------------------------------------------------
+  Integrating spamass-milter into your sendmail installation
+--------------------------------------------------------------
+
+You will need to edit /etc/mail/sendmail.mc and add an
+INPUT_MAIL_FILTER line that connects to the spamass-milter socket.
+
+By default the spamass-milter socket is
+/var/run/sendmail/spamass.sock; so your INPUT_MAIL_FILTER should look
+something like:
+
+ # spamassassin settings
+ INPUT_MAIL_FILTER(`spamassassin',
+         `S=local:/var/run/sendmail/spamass.sock, F=,
+         T=S:4m;R:4m;E:10m')dnl
+
+Briefly, the F=, tells sendmail to just pass the connection through if
+the milter fails. This is most likely the setting you want. If you
+want to temporarily fail a connection, you can set F=T. You almost
+definitely don't want to reject connections, but if necessary, you can
+do that by setting F=R.
+
+You may also need to adjust these timeout settings, as spamd can be
+sluggish on a slow machine. S is the timeout for sending information
+from the MTA to a filter. R is the timeout for reading a reply from
+the filter. E is the overall timeout between sending end-of-message to
+filter and waiting for the final acknowledgment.
+
+The settings above seem to work well on a Celeron 466 that receives
+around 1000 emails an hour. You may wish to adjust them according to
+your needs.
+
+See http://www.sendmail.com/partner/resources/development/milter_api/installation.html
+and http://www.sendmail.org/m4/adding_mailfilters.html#INPUT_MAIL_FILTER
+for more information on milters.
+
+-------------------------------------------------------------
+  Adjusting how spamass-milter is started
+-------------------------------------------------------------
+
+You can adjust how spamass-milter starts, and the options it calls
+spamc with by adjusting /etc/default/spamass-milter. OPTIONS is passed
+directly to spamass-milter by /etc/init.d/spamass-milter.
+
+-------------------------------------------------------------
+Debugging spamass-milter
+-------------------------------------------------------------
+
+As spamass-milter is still undergoing development, you may see bugs
+from time to time.
+
+If spamass-milter is segfaulting (SEGV or SIG 11) please build a
+debugging version of the spamass-milter package and install it:
+
+mkdir temp;
+cd temp;
+apt-get source spamass-milter;
+apt-get build-dep spamass-milter;
+cd spamass-milter-*;
+DEB_BUILD_OPTIONS='nostrip' CXXFLAGS='-O0 -g' fakeroot debian/rules clean binary;
+dpkg -i spamass-milter*.deb;
+
+Then turn on coredumps (ulimit -c unlimited), and start spamass-milter
+as usual (/etc/init.d/spamass-milter start).
+
+When spamass-milter cores, run gdb on the core, ala:
+gdb /usr/sbin/spamass-milter /foo/corefile.pid
+thread apply all where
+bt
+q
+
+and send the results along with your bug report using reportbug.
+
+ -- Don Armstrong <don@donarmstrong.com>, Wed Feb  9 14:58:46 2005

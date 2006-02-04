@@ -1,0 +1,12 @@
+--- spamass-milter-0.2.0/spamass-milter.cpp.orig	2004-08-13 14:08:55.000000000 -0700
++++ spamass-milter-0.2.0/spamass-milter.cpp	2004-08-13 14:12:16.000000000 -0700
+@@ -366,6 +366,9 @@
+ 		int score, rv;
+ 		const char *spam_status = assassin->spam_status().c_str();
+ 		rv = sscanf(spam_status,"%*s hits=%d", &score);
++		/* Spamassassin >= 3 uses score= instead of hit= */
++		if (rv != 1)
++		        rv = sscanf(spam_status,"%*s score=%d", &score);
+ 		if (rv != 1)
+ 			debug(D_ALWAYS, "Could not extract score from <%s>", spam_status);
+ 		else 
