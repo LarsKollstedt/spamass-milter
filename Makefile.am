@@ -1,10 +1,10 @@
 ## Process this file with automake to produce Makefile.in
-## $Id: Makefile.am,v 1.24 2011/02/14 21:56:15 dnelson Exp $
+## $Id: Makefile.am,v 1.21 2005/02/05 07:34:11 dnelson Exp $
 
 AUTOMAKE_OPTIONS = no-dependencies foreign dist-bzip2
 
 # The number of files autoconf leaves lying around after a clean is amazing.
-CLEANFILES = *~ .libs/* .libs spamass-milter.man
+CLEANFILES = *~ .deps/* .libs/* .deps .libs spamass-milter.man
 MAINTAINERCLEANFILES = Makefile.in aclocal.m4 config.h.in \
 	config.log config.status configure configure.lineno stamp-h.in \
 	COPYING INSTALL config.guess config.sub install-sh missing mkinstalldirs \
@@ -38,12 +38,8 @@ sign: dist-all
 	done
 
 upload: dist-all sign
-	rsync -a --progress ${DIST_ARCHIVES} ${DIST_ARCHIVE_SIGS} dl.sv.nongnu.org:/releases/spamass-milt/
-
-# ftp got disabled at some point?
-#upload: dist-all sign
-#	ncftpput savannah.gnu.org incoming/savannah/spamass-milt \
-#		${DIST_ARCHIVES} ${DIST_ARCHIVE_SIGS}
+	ncftpput savannah.gnu.org incoming/savannah/spamass-milt \
+		${DIST_ARCHIVES} ${DIST_ARCHIVE_SIGS}
 
 # The good old way
 #upload: dist-all

@@ -1,6 +1,6 @@
 //-*-c++-*-
 //
-//  $Id: spamass-milter.h,v 1.28 2014/08/15 01:51:19 kovert Exp $
+//  $Id: spamass-milter.h,v 1.22 2004/09/21 20:51:06 dnelson Exp $
 //
 //  Main include file for SpamAss-Milter
 //
@@ -56,39 +56,19 @@ sfsistat mlfi_abort(SMFICTX*);
 extern struct smfiDesc smfilter;
 
 /* struct describing a single network */
-union net
+struct net
 {
-	struct
-	{
-		uint8_t af;
-	} net;
-	struct
-	{
-		uint8_t af;
-		struct in_addr network;
-		struct in_addr netmask;
-	} net4;
-	struct
-	{
-		uint8_t af;
-		struct in6_addr network;
-		int netmask; /* Just the number of bits for IPv6 */
-	} net6;
+	struct in_addr network;
+	struct in_addr netmask;
 };
 
 /* an array of networks */
 struct networklist
 {
-	union net *nets;
+	struct net *nets;
 	int num_nets;
 };
 
-/* an array of addresses */
-struct addresslist
-{
-        char **addrs;
-        int num_addrs;
-};
 
 // Debug tokens.
 enum debuglevel
@@ -174,6 +154,9 @@ public:
   // List of recipients after alias/virtusertable expansion
   list <string> expandedrcpt;
 
+  // the sendmail queue id for this message; used for logging
+  string queueid;
+
   // Process handling variables
   pid_t pid;
   int pipe_io[2][2];
@@ -182,14 +165,8 @@ public:
 /* Private data structure to carry per-client data between calls */
 struct context
 {
-	char connect_ip[64];	// remote IP address
+	struct in_addr connect_ip;	// remote IP address
 	char *helo;
-	char *our_fqdn;
-	char *sender_address;
-	char *queueid;
-	char *auth_authen;
-	char *auth_ssf;
-        bool onlytag;
 	SpamAssassin *assassin; // pointer to the SA object if we're processing a message
 };
 
@@ -205,13 +182,8 @@ string::size_type find_nocase(const string&, const string&, string::size_type = 
 int cmp_nocase_partial(const string&, const string&);
 void closeall(int fd);
 void parse_networklist(char *string, struct networklist *list);
-int ip_in_networklist(struct sockaddr *addr, struct networklist *list);
-void parse_addresslist(char *string, struct addresslist *list);
-int addr_in_addresslist(char *addr, struct addresslist *list);
+int ip_in_networklist(struct in_addr ip, struct networklist *list);
 void parse_debuglevel(char* string);
 char *strlwr(char *str);
-void warnmacro(const char *macro, const char *scope);
-FILE *popenv(char *const argv[], const char *type, pid_t *pid);
-char *to_nonpermanent(char* instring);
 
 #endif

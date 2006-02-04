@@ -1,4 +1,4 @@
-.\" $Id: spamass-milter.1.in,v 1.21 2014/08/15 02:25:31 kovert Exp $
+.\" $Id: spamass-milter.1.in,v 1.19 2004/03/18 18:37:08 dnelson Exp $
 .Dd July 25, 2001
 .Os
 .Dt SPAMASS_MILTER 8
@@ -8,26 +8,18 @@
 .Sh SYNOPSIS
 .Nm
 .Fl p Ar socket
-.Op Fl a
-.Op Fl A
 .Op Fl b Ns | Ns Fl B Ar spamaddress
-.Op Fl c Ar returncode
-.Op Fl C Ar rejectcode
 .Op Fl d Ar debugflags
 .Op Fl D Ar host
 .Op Fl e Ar defaultdomain
 .Op Fl f
-.Op Fl g Ar group
 .Op Fl i Ar networks
-.Op Fl l Ar nn
 .Op Fl m
 .Op Fl M
 .Op Fl P Ar pidfile
 .Op Fl r Ar nn
-.Op Fl r rejectmsg
 .Op Fl u Ar defaultuser
 .Op Fl x
-.Op Fl S /path/to/sendmail
 .Op Fl - Ar spamc flags ...
 .Sh DESCRIPTION
 The
@@ -46,16 +38,6 @@ will not be able to access the milter.
 This may cause messages to bounce, queue, or be passed through
 unmiltered, depending on the parameters in
 .Nm sendmail Ns 's .cf file.
-.It Fl a
-Skips messages received on an authenticated connection.
-.It Fl A
-Always scan and tag messages but treat 
-.Fl T
-, 
-.Fl i
-and
-.Fl a
-as an exception from rejecting and defering mails classified as spam.
 .It Fl b Ar spamaddress
 Redirects tagged spam to the specified email address.
 All envelope recipients are removed, and inserted into the message as
@@ -70,19 +52,6 @@ Only one of
 and
 .Fl B
 may be used.
-.It Fl c Ar returncode
-Mail that is rejected is rejected by default with a 550 returncode.  This option
-allows that to be overridden.  See also 
-.Fl C
-and
-.Fl R .
-.It Fl C Ar rejectcode
-Mail that is rejected is rejected by default with a 5.7.1 code.  This option
-allows that to be overridden.  See also 
-.Fl R
-and
-.Fl c
-.
 .It Fl d Ar debugflags
 Enables logging. 
 .Ar debugflags 
@@ -138,12 +107,6 @@ flag.
 Causes
 .Nm
 to fork into the background.
-.It Fl g Ar group
-Makes the socket for communication with the MTA group-writable (mode 0750)
-and sets the socket's group to
-.Ar group .
-This option is intended for use with MTA's like Postfix that do not run as
-root, and is incompatible with Sendmail usage.
 .It Fl i Ar networks
 Ignores messages if the originating IP is in the network(s) listed.
 The message will be passed through without calling SpamAssassin at all.
@@ -156,13 +119,6 @@ Multiple
 flags will append to the list.
 For example, if you list all your internal networks, no outgoing emails
 will be filtered.
-.It Fl l Ar nn
-Randomly defer scanned email if it greater than or equal to
-.Ar nn .
-The probability of defering increases with the spam score. 
-Requires 
-.Fl r
-as an upper limit. 
 .It Fl m
 Disables modification of the 
 .Ql Subject: 
@@ -214,15 +170,6 @@ a separate folder just in case of false positives, you can use
 .Fl r Ar 15
 and reject flagrant spam outright while still receiving low-scoring
 messages.
-.It Fl R Ar rejecttext
-Mail that is rejected is rejected with the message "Blocked by SpamAssassin".
-This option allows the user to call with a different message, instead.   See
-also, the
-.Fl C
-option
-.It Fl S Ar /path/to/sendmail
-This option is used in conjunction with the -x option to specify a path
-to sendmail if the default compiled in choice is not satisfactory.
 .It Fl u Ar defaultuser
 Pass the username part of the first recipient to spamc with the 
 .Fl u 
@@ -251,9 +198,7 @@ which will perform virtusertable and alias expansion.
 The resulting username is then passed to spamc.
 Requires the
 .Fl u
-flag.  The spamass-milter configuration process does its
-best to find sendmail, but it is possible to override this compiled-in
-setting via the
+flag.  
 .It Fl - Ar spamc flags ...
 Pass all remaining options to spamc. 
 This allows you to connect to a remote spamd with
@@ -272,4 +217,3 @@ client interface to SpamAssassin
 .Sh AUTHORS
 .An "Georg C. F. Greve" Aq greve@gnu.org
 .An "Dan Nelson" Aq dnelson@allantgroup.com
-.An "Todd Kover" Aq kovert@omniscient.com
