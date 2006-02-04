@@ -1,0 +1,15 @@
+--- spamass-milter-0.2.0.orig/spamass-milter.cpp
++++ spamass-milter-0.2.0/spamass-milter.cpp
+@@ -351,6 +378,12 @@
+   string::size_type eoh = ( eoh1 < eoh2 ? eoh1 : eoh2 );
+   string::size_type bob = assassin->d().find_first_not_of("\r\n", eoh);
+ 
++  // Patch by Valentin Chopov <valentin@valcho.net> to fix segfault on
++  // empty body
++  if (bob == string::npos) {
++    bob = assassin->d().size();
++  }
++
+   update_or_insert(assassin, ctx, assassin->spam_flag(), &SpamAssassin::set_spam_flag, "X-Spam-Flag");
+   update_or_insert(assassin, ctx, assassin->spam_status(), &SpamAssassin::set_spam_status, "X-Spam-Status");
+ 

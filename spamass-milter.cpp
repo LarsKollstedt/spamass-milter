@@ -226,6 +226,10 @@ main(int argc, char* argv[])
                 debug(D_MISC, "Parsing ignore list");
                 parse_networklist(optarg, &ignorenets);
                 break;
+			case 'I':
+				debug(D_MISC, "Ignore authenticated senders");
+				ignore_authenticated_senders = true;
+				break;
             case 'm':
                 dontmodifyspam = true;
                 smfilter.xxfi_flags &= ~SMFIF_CHGBODY;
@@ -818,6 +822,22 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
 
     if (auth_type) {
       debug(D_MISC, "auth_type=%s", auth_type);
+      return SMFIS_ACCEPT;
+    }
+  }
+
+  if (ignore_authenticated_senders)
+  {
+    char *auth_authen;
+
+    auth_authen = smfi_getsymval(ctx, "{auth_authen}");
+    debug(D_MISC, "auth_authen=%s", auth_authen ?: "<unauthenticated>");
+
+    if (auth_authen)
+    {
+      debug(D_MISC, "sender authenticated (%s) - accepting message",
+	    auth_authen);
+      debug(D_FUNC, "mlfi_envfrom: exit ignore");
       return SMFIS_ACCEPT;
     }
   }
