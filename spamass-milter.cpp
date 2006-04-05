@@ -826,6 +826,13 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
     }
   }
 
+  if (sctx == NULL)
+  {
+    debug(D_ALWAYS, "smfi_getpriv failed!");
+    return SMFIS_TEMPFAIL;
+  }
+  /* debug(D_ALWAYS, "ZZZ got private context %p", sctx); */
+
   if (ignore_authenticated_senders)
   {
     char *auth_authen;
