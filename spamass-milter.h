@@ -1,23 +1,23 @@
 //-*-c++-*-
 //
-//  $Id: spamass-milter.h,v 1.22 2004/09/21 20:51:06 dnelson Exp $
+//  $Id: spamass-milter.h,v 1.23 2005/04/07 02:04:24 dnelson Exp $
 //
 //  Main include file for SpamAss-Milter
 //
 //  Copyright (c) 2002 Georg C. F. Greve <greve@gnu.org>,
-//   all rights maintained by FSF Europe e.V.,
+//   all rights maintained by FSF Europe e.V., 
 //   Villa Vogelsang, Antonienallee 1, 45279 Essen, Germany
 //
 //   This program is free software; you can redistribute it and/or modify
 //   it under the terms of the GNU General Public License as published by
 //   the Free Software Foundation; either version 2 of the License, or
 //   (at your option) any later version.
-//
+//  
 //   This program is distributed in the hope that it will be useful,
 //   but WITHOUT ANY WARRANTY; without even the implied warranty of
 //   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 //   GNU General Public License for more details.
-//
+//  
 //   You should have received a copy of the GNU General Public License
 //   along with this program; if not, write to the Free Software
 //   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -71,7 +71,7 @@ struct networklist
 
 
 // Debug tokens.
-enum debuglevel
+enum debuglevel 
 {
 	D_ALWAYS, D_FUNC, D_POLL, D_UORI, D_STR, D_MISC, D_NET, D_SPAMC, D_RCPT,
 	D_COPY,
@@ -124,7 +124,7 @@ private:
   void empty_and_close_pipe();
   int read_pipe();
 
-public:
+public:  
   // flags
   bool error;
   bool running;		/* XXX merge running, connected, and pid */
@@ -140,11 +140,11 @@ public:
   // Variables for SpamAssassin influenced fields
   string x_spam_status, x_spam_flag, x_spam_report, x_spam_prev_content_type;
   string x_spam_checker_version, x_spam_level, _content_type, _subject;
-
+  
   // Envelope info: MAIL FROM:, RCPT TO:, and IP address of remote host
   // _rcpt only holds the first recipient if there are more than one
   string _from, _rcpt, _connectip;
-
+  
   // Counter to keep track of the number of recipients
   int    _numrcpt;
 
@@ -161,7 +161,7 @@ public:
   pid_t pid;
   int pipe_io[2][2];
 };
-
+  
 /* Private data structure to carry per-client data between calls */
 struct context
 {
@@ -173,7 +173,7 @@ struct context
 /* This hack is the only way to call pointers to member functions! */
 typedef string::size_type (SpamAssassin::*t_setter)(const string &val);
 #define callsetter(object, ptrToMember)  ((object).*(ptrToMember))
-
+       
 int assassinate(SMFICTX*, SpamAssassin*);
 
 void throw_error(const string&);
@@ -185,5 +185,6 @@ void parse_networklist(char *string, struct networklist *list);
 int ip_in_networklist(struct in_addr ip, struct networklist *list);
 void parse_debuglevel(char* string);
 char *strlwr(char *str);
+void warnmacro(char *macro, char *scope);
 
 #endif

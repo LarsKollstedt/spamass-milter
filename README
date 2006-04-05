@@ -1,4 +1,4 @@
-$Id: README,v 1.4 2003/06/10 18:42:38 dnelson Exp $
+$Id: README,v 1.6 2005/08/15 15:10:47 dnelson Exp $
 
 Spamass-Milter, a small
  - SpamAssassin Sendmail Mail Filter (Milter) Plugin 
@@ -27,10 +27,11 @@ BEFORE INSTALLING & TRYING TO USE THIS PROGRAM, PLEASE MAKE SURE THAT
 SPAMC/SPAMD DOES EXACTLY WHAT YOU WANT; OTHERWISE YOU MIGHT RISK
 LOSING MAIL.
 
-Theoretically, "./configure ; make ; make install" (see INSTALL)
-should do the trick. If it doesn't, you may be missing something or
-the configuration may not be working for you. 
-
+"./configure ; make ; make install" should do the trick.  If it
+doesn't, you may be missing something or the configuration may not be
+working for you.  If you are not using a release tarball, you will need
+to have automake and autoconf installed, and run "./autogen.sh" to
+generate the configure script first.
 
 Configuration:
 --------------
@@ -54,7 +55,8 @@ configuring sendmail through m4 & the sendmail.mc files. In this case
 adding the lines
 
 INPUT_MAIL_FILTER(`spamassassin', `S=local:/var/run/sendmail/spamass.sock, F=, T=C:15m;S:4m;R:4m;E:10m')dnl
-define(`confMILTER_MACROS_CONNECT',`b, j, _, {daemon_name}, {if_name}, {if_addr}')dnl
+define(`confMILTER_MACROS_CONNECT',`t, b, j, _, {daemon_name}, {if_name}, {if_addr}')dnl
+define(`confMILTER_MACROS_HELO',`s, {tls_version}, {cipher}, {cipher_bits}, {cert_subject}, {cert_issuer}')dnl
 
 should do the trick. Of course you need to modify the path of the
 socket if you put another one into the startup script. The timeouts

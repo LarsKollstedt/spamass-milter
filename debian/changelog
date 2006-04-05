@@ -1,3 +1,9 @@
+spamass-milter (0.3.1-1) UNRELEASED; urgency=low
+
+  * (NOT RELEASED YET) New upstream release
+
+ -- Don Armstrong <don@debian.org>  Wed,  5 Apr 2006 12:16:08 -0700
+
 spamass-milter (0.3.0-2) unstable; urgency=low
 
   * Add -I option to stop delaying mail from authenticated users. Thanks to

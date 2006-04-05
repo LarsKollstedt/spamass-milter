@@ -1,3 +1,74 @@
+2006-04-05 10:59  Dan Nelson <dnelson@allantgroup.com>
+
+	* NEWS, configure.in:
+
+	0.3.1
+
+2006-03-23 15:51  Dan Nelson <dnelson@allantgroup.com>
+
+	* NEWS:
+
+	news update (sa 3.1.1, better Received header)
+
+2006-03-23 15:41  Dan Nelson <dnelson@allantgroup.com>
+
+	* spamass-milter.cpp:
+
+	Spamassassin 3.1.1 now emits headers with CRLF if the incoming message
+	has CRLFs.  Make sure that we strip the CR from wrapped headers when we
+	parse the returned message.
+
+2006-01-23 14:47  Dan Nelson <dnelson@allantgroup.com>
+
+	* Makefile.am:
+
+	.deps isn't created since we use no-dependencies
+
+2005-10-06 10:12  Dan Nelson <dnelson@allantgroup.com>
+
+	* configure.in:
+
+	Add /usr/sbin to the list of directories to look for sendmail in, just
+	in case the user doesn't have it in their $PATH.  /usr/lib was the
+	historical location for sendmail, but most systems put the real binary
+	in /usr/sbin now.
+
+2005-08-15 10:10  Dan Nelson <dnelson@allantgroup.com>
+
+	* README:
+
+	Remove references to INSTALL, also mention autogen.sh.
+
+	http://savannah.nongnu.org/bugs/?func=detailitem&item_id=14090
+
+2005-06-02 13:30  Dan Nelson <dnelson@allantgroup.com>
+
+	* spamass-milter.cpp:
+
+	It turns out that mlfi_close /can/ be called without mlfi_connect, and
+	there is no guarantee that the context has been set.  If it's NULL,
+	just return.
+
+2005-04-06 21:04  Dan Nelson <dnelson@allantgroup.com>
+
+	* README, spamass-milter.cpp, spamass-milter.h:
+
+
+	- Make our fake sendmail Received: header even better.
+
+	- Fix a silly bug in cmp_nocase_partial that made it return true if
+	  either string was a prefix of the other (it should return true only
+	  if s is a prefix of s2).
+
+	Thanks to Yoshitaka Tokugawa.
+
+2005-02-22 10:10  Dan Nelson <dnelson@allantgroup.com>
+
+	* spamass-milter.cpp:
+
+	Change 172.16 to 172.16.0.0 in the usage text.  Partial IP addresses do
+	not parse correctly.
+
 2005-02-05 01:34  Dan Nelson <dnelson@allantgroup.com>
 
 	* Makefile.am:
@@ -92,7 +163,7 @@
 2004-09-06 20:19  Dan Nelson <dnelson@allantgroup.com>
 
 	* ac_cxx_exceptions.m4, ac_cxx_namespaces.m4,
-	ac_cxx_verbose_terminate_handler.m4:
+	  ac_cxx_verbose_terminate_handler.m4:
 
 	Update ac-archive scripts and add upstream version ids
 
@@ -202,7 +273,7 @@
 2004-03-18 12:37  Dan Nelson <dnelson@allantgroup.com>
 
 	* configure.in, spamass-milter.1.in, spamass-milter.cpp,
-	spamass-milter.h:
+	  spamass-milter.h:
 
 	Document -p and -x
 
@@ -264,8 +335,8 @@
 2003-10-24 01:55  Dan Nelson <dnelson@allantgroup.com>
 
 	* ac_cxx_exceptions.m4, ac_cxx_namespaces.m4,
-	ac_cxx_verbose_terminate_handler.m4, configure.in,
-	spamass-milter.cpp:
+	  ac_cxx_verbose_terminate_handler.m4, configure.in,
+	  spamass-milter.cpp:
 
 	Use gcc's verbose exception handler is possible.  If this function is
 	unavailable, C++ will simply abort on any exception.  Ugh.
@@ -387,7 +458,7 @@
 2003-08-11 16:36  Dan Nelson <dnelson@allantgroup.com>
 
 	* configure.in, spamass-milter.1.in, spamass-milter.cpp,
-	spamass-milter.h:
+	  spamass-milter.h:
 
 	Preliminary work to support alias/virtusertable expansion.
 	sendmail -bv is called and its output is parsed, but all we do is log it
@@ -840,7 +911,7 @@
 2003-06-03 01:24  Dan Nelson <dnelson@allantgroup.com>
 
 	* AUTHORS, spamass-milter.1.in, spamass-milter.cpp,
-	spamass-milter.h:
+	  spamass-milter.h:
 
 	Add -i to list netblocks to ignore (argument is a comma-delimited list
 	of ip addresses, ip/netmask, or ip/bits).
@@ -914,7 +985,7 @@
 2003-03-06 15:37  Dan Nelson <dnelson@allantgroup.com>
 
 	* Makefile.am, configure.in, poll.c, spamass-milter.cpp,
-	subst_poll.h:
+	  subst_poll.h:
 
 
 	Provide a substitute poll() function for systems that are missing it.
@@ -1232,8 +1303,8 @@
 2002-07-24 11:19  Dan Nelson <dnelson@allantgroup.com>
 
 	* Makefile.am, autogen.sh, configure.in, rhautogen.sh,
-	contrib/spamass-milter, contrib/spamass-milter-redhat.rc,
-	contrib/spamass-milter.spec.in:
+	  contrib/spamass-milter, contrib/spamass-milter-redhat.rc,
+	  contrib/spamass-milter.spec.in:
 
 
 	- Add RedHat .spec and .rc files
@@ -1277,7 +1348,7 @@
 2002-07-22 21:02  Dan Nelson <dnelson@allantgroup.com>
 
 	* Makefile.am, acconfig.h, acinclude.m4, autogen.sh, configure.in,
-	spamass-milter.cpp, spamass-milter.h:
+	  spamass-milter.cpp, spamass-milter.h:
 
 
 	- Update to autoconf 2.53
@@ -1316,7 +1387,7 @@
 2002-03-06 07:07  Georg C. F. Greve  <greve@gnu.org>
 
 	* AUTHORS, ChangeLog, NEWS, configure.in, spamass-milter.cpp,
-	spamass-milter.h, contrib/spamass-milter:
+	  spamass-milter.h, contrib/spamass-milter:
 
 	Applied some patches. Rights assigned to FSF Europe. Appointed Michael as maintainer.
 
