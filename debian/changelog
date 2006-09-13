@@ -1,3 +1,12 @@
+spamass-milter (0.3.1-2) UNRELEASED; urgency=low
+
+  * Create /var/run/sendmail if it doesn't already exist to allow for
+    /var/run on a tmpfs (closes: #373812)
+  * Stop depending on sendmail, and begin recommending sendmail or postfix
+    (closes: #378460)
+
+ -- Don Armstrong <don@debian.org>  Wed,  5 Apr 2006 13:21:11 -0700
+
 spamass-milter (0.3.1-1) unstable; urgency=low
 
   * New upstream release

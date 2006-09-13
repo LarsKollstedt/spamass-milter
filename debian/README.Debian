@@ -34,6 +34,21 @@ See http://www.sendmail.com/partner/resources/development/milter_api/installatio
 and http://www.sendmail.org/m4/adding_mailfilters.html#INPUT_MAIL_FILTER
 for more information on milters.
 
+--------------------------------------------------------------
+  Integrating spamass-milter into your postfix installation
+--------------------------------------------------------------
+
+You need to edit /etc/postfix/main.cf and configure smptpd_milters so
+that postfix connects to the spamass-milter socket. Something like:
+
+  # spamass-milter configuration
+  smtpd_milters = unix:/var/run/sendmail/spamass.sock
+
+should work. See http://www.postfix.org/MILTER_README.html or
+/usr/share/doc/postfix/MILTER_README.gz (in postfix-doc) for
+information on how to set tempfail and the various timeouts that the
+sendmail configuration above uses.
+
 -------------------------------------------------------------
   Adjusting how spamass-milter is started
 -------------------------------------------------------------
@@ -71,4 +86,4 @@ q
 
 and send the results along with your bug report using reportbug.
 
- -- Don Armstrong <don@donarmstrong.com>, Wed Feb  9 14:58:46 2005
+ -- Don Armstrong <don@donarmstrong.com>, Tuesday, September 12, 2006 20:24:40 PDT
