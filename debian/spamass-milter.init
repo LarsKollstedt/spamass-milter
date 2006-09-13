@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: spamass-milter,v 1.4 2002/07/24 16:19:53 dnelson Exp $
+# $Id$
 #
 # Sample init script for Debian GNU/Linux
 #
@@ -52,6 +52,9 @@ case "$1" in
   start)
 	echo -n "Starting $DESC: "
 
+	if [ ! -d $(basename $SOCKET) ]; then
+	    mkdir -p $(basename $SOCKET);
+	fi;
 	start-stop-daemon --start -p $PIDFILE --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
 
 	echo "${DAEMON}"
