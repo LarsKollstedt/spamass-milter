@@ -44,6 +44,14 @@ CHUID=""
 
 test -x $DAEMON || exit 0
 
+# If /usr/sbin/postfix exists, set up the defaults for a postfix install
+# These can be overridden in /etc/default/spamass-milter
+if [ -x /usr/sbin/posfix ]; then
+    SOCKET="/var/spool/postfix/spamass/spamass.sock"
+    RUNAS="postfix:postfix"
+    PIDFILE="/var/spool/postfix/spamass/spamass.pid"
+fi;
+
 if [ -r $DEFAULT ]; then
     . $DEFAULT;
 fi;

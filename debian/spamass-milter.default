@@ -13,7 +13,12 @@ OPTIONS="-u nobody -i 127.0.0.1"
 # Do not modify Subject:, Content-Type: or body.
 #OPTIONS="-m"
 
-# If you are using postfix, you probably want to uncomment the following
+######################################
+# If /usr/sbin/postfix is executable, the following are set by
+# default. You can override them by uncommenting and changing them
+# here.
+######################################
 # SOCKET="/var/spool/postfix/spamass/spamass.sock"
-# RUNAS="postfix"
+# RUNAS="postfix:postfix"
 # PIDFILE="/var/spool/postfix/spamass/spamass.pid"
+######################################
