@@ -39,11 +39,17 @@ DESC="Sendmail milter plugin for SpamAssassin"
 
 DEFAULT=/etc/default/spamass-milter
 OPTIONS=""
+RUNAS=""
+CHUID=""
 
 test -x $DAEMON || exit 0
 
 if [ -r $DEFAULT ]; then
     . $DEFAULT;
+fi;
+
+if [ -n $RUNAS ]; then
+    CHUID="--chuid $RUNAS";
 fi;
 
 set -e
@@ -52,10 +58,10 @@ case "$1" in
   start)
 	echo -n "Starting $DESC: "
 
-	if [ ! -d $(basename $SOCKET) ]; then
-	    mkdir -p $(basename $SOCKET);
+	if [ ! -d $(dirname $SOCKET) ]; then
+	    mkdir -p $(dirname $SOCKET);
 	fi;
-	start-stop-daemon --start -p $PIDFILE --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
+	start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
 
 	echo "${DAEMON}"
 	;;
