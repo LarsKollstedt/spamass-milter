@@ -42,12 +42,16 @@ You need to edit /etc/postfix/main.cf and configure smptpd_milters so
 that postfix connects to the spamass-milter socket. Something like:
 
   # spamass-milter configuration
-  smtpd_milters = unix:/var/run/sendmail/spamass.sock
+  smtpd_milters = unix:/var/run/postfix/spamass.sock
 
 should work. See http://www.postfix.org/MILTER_README.html or
 /usr/share/doc/postfix/MILTER_README.gz (in postfix-doc) for
 information on how to set tempfail and the various timeouts that the
 sendmail configuration above uses.
+
+You'll also want to change /etc/default/spamass-milter to use the
+SOCKET above, and also enable RUNAS so that it runs as the same user
+that will be connecting to the socket.
 
 -------------------------------------------------------------
   Adjusting how spamass-milter is started
@@ -86,4 +90,4 @@ q
 
 and send the results along with your bug report using reportbug.
 
- -- Don Armstrong <don@donarmstrong.com>, Tuesday, September 12, 2006 20:24:40 PDT
+ -- Don Armstrong <don@debian.org>, Fri, 13 Oct 2006 01:03:04 -0700
