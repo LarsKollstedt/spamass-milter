@@ -60,6 +60,15 @@ case "$1" in
 
 	if [ ! -d $(dirname $SOCKET) ]; then
 	    mkdir -p $(dirname $SOCKET);
+	    if [ -n "$RUNAS" ]; then
+		chown "$RUNAS" $(dirname $SOCKET);
+	    fi;
+	fi;
+	if [ ! -d $(dirname $PIDFILE) ]; then
+	    mkdir -p $(dirname $PIDFILE);
+	    if [ -n "$RUNAS" ]; then
+		chown "$RUNAS" $(dirname $PIDFILE);
+	    fi;
 	fi;
 	start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
 

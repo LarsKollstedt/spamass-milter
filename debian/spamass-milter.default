@@ -13,6 +13,7 @@ OPTIONS="-u nobody -i 127.0.0.1"
 # Do not modify Subject:, Content-Type: or body.
 #OPTIONS="-m"
 
-# If you are using postfix, you may want to use the following
-# SOCKET="/var/spool/postfix/spamass.sock"
+# If you are using postfix, you probably want to uncomment the following
+# SOCKET="/var/spool/postfix/spamass/spamass.sock"
 # RUNAS="postfix"
+# PIDFILE="/var/spool/postfix/spamass/spamass.pid"
