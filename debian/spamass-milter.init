@@ -48,7 +48,7 @@ if [ -r $DEFAULT ]; then
     . $DEFAULT;
 fi;
 
-if [ -n $RUNAS ]; then
+if [ -n "$RUNAS" ]; then
     CHUID="--chuid $RUNAS";
 fi;
 
