@@ -97,7 +97,7 @@ case "$1" in
 	start-stop-daemon --stop -p $PIDFILE --signal 3 --exec $DAEMON
 	/bin/sleep 5s
 	/bin/rm -f $SOCKET
-        start-stop-daemon --start -p $PIDFILE --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
+        start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
 
         echo "${DAEMON}"
 
