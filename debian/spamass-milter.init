@@ -41,6 +41,7 @@ DEFAULT=/etc/default/spamass-milter
 OPTIONS=""
 RUNAS=""
 CHUID=""
+SOCKETMODE=""
 
 test -x $DAEMON || exit 0
 
@@ -48,8 +49,9 @@ test -x $DAEMON || exit 0
 # These can be overridden in /etc/default/spamass-milter
 if [ -x /usr/sbin/postfix ]; then
     SOCKET="/var/spool/postfix/spamass/spamass.sock"
-    RUNAS="postfix:postfix"
+    RUNAS=""
     PIDFILE="/var/spool/postfix/spamass/spamass.pid"
+    SOCKETMODE="0666"
 fi;
 
 if [ -r $DEFAULT ]; then
@@ -78,7 +80,11 @@ case "$1" in
 		chown "$RUNAS" $(dirname $PIDFILE);
 	    fi;
 	fi;
+	/bin/rm -f $SOCKET
 	start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
+	if [ -n "$SOCKETMODE" ]; then
+	    chmod $SOCKETMODE $SOCKET;
+	fi;
 
 	echo "${DAEMON}"
 	;;
@@ -98,6 +104,10 @@ case "$1" in
 	/bin/sleep 5s
 	/bin/rm -f $SOCKET
         start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
+
+	if [ -n "$SOCKETMODE" ]; then
+	    chmod $SOCKETMODE $SOCKET;
+	fi;
 
         echo "${DAEMON}"
 
