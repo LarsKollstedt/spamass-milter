@@ -41,10 +41,19 @@ DEFAULT=/etc/default/spamass-milter
 OPTIONS=""
 RUNAS="nobody"
 CHUID=""
-SOCKETMODE="0660"
-SOCKETOWNER="root:adm"
+SOCKETMODE="0640"
+SOCKETOWNER="root:root"
 
 test -x $DAEMON || exit 0
+
+if [ -e /etc/mail/sendmail.cf ] && egrep -q 'X.+S=local:/var/run/sendmail/spamass\.sock' /etc/mail/sendmail.cf; then
+    SOCKET=/var/run/sendmail/spamass.sock
+    SOCKETMODE=""
+    SOCKETOWNER=""
+    RUNAS=""
+    echo "WARNING: You are using the old location of spamass.sock. Change your input filter to use";
+    echo "/var/run/spamass/spamass.sock so spamass-milter can run as nobody";
+fi;
 
 # If /usr/sbin/postfix exists, set up the defaults for a postfix install
 # These can be overridden in /etc/default/spamass-milter
@@ -52,6 +61,7 @@ if [ -x /usr/sbin/postfix ]; then
     SOCKET="/var/spool/postfix/spamass/spamass.sock"
     PIDFILE="/var/spool/postfix/spamass/spamass.pid"
     SOCKETOWNER="postfix:postfix"
+    SOCKETMODE="0660"
 fi;
 
 if [ -r $DEFAULT ]; then
@@ -77,12 +87,6 @@ start() {
 	    chown "$RUNAS" $(dirname $PIDFILE);
 	fi;
     fi;
-    # Drop in a compatibility symlink for the old sendmail socket location
-    if [ -d /var/run/sendmail ] && [ -n "$RUNAS" ] && 
-	[ "$SOCKET" == "/var/run/spamass/spamass.sock" ] && 
-        [ ! -e /var/run/sendmail/spamass.sock ] && [ ! -L /var/run/sendmail/spamass.sock ]; then
-	ln -s $SOCKET /var/run/sendmail/spamass.sock;
-    fi;
     /bin/rm -f $SOCKET
     start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
     sleep 1s
@@ -90,7 +94,7 @@ start() {
 	chmod $SOCKETMODE $SOCKET;
     fi;
     if [ -n "$SOCKETOWNER" ]; then
-	chown $SOCKETOWNER $SOCKET:
+	chown $SOCKETOWNER $SOCKET;
     fi;
 }
 
