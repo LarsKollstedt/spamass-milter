@@ -6,7 +6,7 @@ You will need to edit /etc/mail/sendmail.mc and add an
 INPUT_MAIL_FILTER line that connects to the spamass-milter socket.
 
 By default the spamass-milter socket is
-/var/run/sendmail/spamass.sock; so your INPUT_MAIL_FILTER should look
+/var/run/spamass/spamass.sock; so your INPUT_MAIL_FILTER should look
 something like:
 
  # spamassassin settings
@@ -15,6 +15,7 @@ something like:
          T=S:4m;R:4m;E:10m')dnl
  define(`confMILTER_MACROS_CONNECT',`t, b, j, _, {daemon_name}, {if_name}, {if_addr}')dnl
  define(`confMILTER_MACROS_HELO',`s, {tls_version}, {cipher}, {cipher_bits}, {cert_subject}, {cert_issuer}')dnl
+ define(`confMILTER_MACROS_ENVRCPT',`b, i, j, r, v, Z, _')dnl
 
 Briefly, the F=, tells sendmail to just pass the connection through if
 the milter fails. This is most likely the setting you want. If you
@@ -92,4 +93,4 @@ q
 
 and send the results along with your bug report using reportbug.
 
- -- Don Armstrong <don@debian.org>, Tue,  2 Jan 2007 07:56:46 -0800
+ -- Don Armstrong <don@debian.org>, Tue,  2 Jan 2007 08:22:46 -0800
