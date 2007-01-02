@@ -33,7 +33,7 @@
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/sbin/spamass-milter
-SOCKET=/var/run/sendmail/spamass.sock
+SOCKET=/var/run/spamass/spamass.sock
 PIDFILE=/var/run/spamass/spamass.pid
 DESC="Sendmail milter plugin for SpamAssassin"
 
@@ -76,6 +76,12 @@ start() {
 	if [ -n "$RUNAS" ]; then
 	    chown "$RUNAS" $(dirname $PIDFILE);
 	fi;
+    fi;
+    # Drop in a compatibility symlink for the old sendmail socket location
+    if [ -d /var/run/sendmail ] && [ -n "$RUNAS" ] && 
+	[ "$SOCKET" == "/var/run/spamass/spamass.sock" ] && 
+	! [ -e /var/run/sendmail/spamass.sock ]; then
+	ln $SOCKET /var/run/sendmail/spamass.sock;
     fi;
     /bin/rm -f $SOCKET
     start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
