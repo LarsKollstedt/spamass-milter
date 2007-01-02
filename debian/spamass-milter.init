@@ -34,14 +34,15 @@
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/sbin/spamass-milter
 SOCKET=/var/run/sendmail/spamass.sock
-PIDFILE=/var/run/spamass.pid
+PIDFILE=/var/run/spamass/spamass.pid
 DESC="Sendmail milter plugin for SpamAssassin"
 
 DEFAULT=/etc/default/spamass-milter
 OPTIONS=""
-RUNAS=""
+RUNAS="nobody"
 CHUID=""
-SOCKETMODE=""
+SOCKETMODE="0660"
+SOCKETOWNER="root:adm"
 
 test -x $DAEMON || exit 0
 
@@ -49,9 +50,8 @@ test -x $DAEMON || exit 0
 # These can be overridden in /etc/default/spamass-milter
 if [ -x /usr/sbin/postfix ]; then
     SOCKET="/var/spool/postfix/spamass/spamass.sock"
-    RUNAS=""
     PIDFILE="/var/spool/postfix/spamass/spamass.pid"
-    SOCKETMODE="0666"
+    SOCKETOWNER="postfix:postfix"
 fi;
 
 if [ -r $DEFAULT ]; then
@@ -64,52 +64,52 @@ fi;
 
 set -e
 
+start() {
+    if [ ! -d $(dirname $SOCKET) ]; then
+	mkdir -p $(dirname $SOCKET);
+	if [ -n "$SOCKETOWNER" ]; then
+	    chown "$SOCKETOWNER" $(dirname $SOCKET);
+	fi;
+    fi;
+    if [ ! -d $(dirname $PIDFILE) ]; then
+	mkdir -p $(dirname $PIDFILE);
+	if [ -n "$RUNAS" ]; then
+	    chown "$RUNAS" $(dirname $PIDFILE);
+	fi;
+    fi;
+    /bin/rm -f $SOCKET
+    start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
+    if [ -n "$SOCKETMODE" ]; then
+	chmod $SOCKETMODE $SOCKET;
+    fi;
+    if [ -n "$SOCKETOWNER" ]; then
+	chown $SOCKETOWNER $SOCKET:
+    fi;
+}
+
+stop(){
+    start-stop-daemon --stop -p $PIDFILE --signal 3 --exec $DAEMON
+    /bin/sleep 5s
+    /bin/rm -f $SOCKET
+}
+
 case "$1" in
   start)
 	echo -n "Starting $DESC: "
-
-	if [ ! -d $(dirname $SOCKET) ]; then
-	    mkdir -p $(dirname $SOCKET);
-	    if [ -n "$RUNAS" ]; then
-		chown "$RUNAS" $(dirname $SOCKET);
-	    fi;
-	fi;
-	if [ ! -d $(dirname $PIDFILE) ]; then
-	    mkdir -p $(dirname $PIDFILE);
-	    if [ -n "$RUNAS" ]; then
-		chown "$RUNAS" $(dirname $PIDFILE);
-	    fi;
-	fi;
-	/bin/rm -f $SOCKET
-	start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
-	if [ -n "$SOCKETMODE" ]; then
-	    chmod $SOCKETMODE $SOCKET;
-	fi;
-
+	start
 	echo "${DAEMON}"
 	;;
   stop)
 	echo -n "Stopping $DESC: "
-
-	start-stop-daemon --stop -p $PIDFILE --signal 3 --exec $DAEMON
-	/bin/sleep 5s
-	/bin/rm -f $SOCKET
-
+	stop
 	echo "${DAEMON}"
 	;;
   force-reload | restart)
 	echo -n "Restarting $DESC: "
 
-	start-stop-daemon --stop -p $PIDFILE --signal 3 --exec $DAEMON
-	/bin/sleep 5s
-	/bin/rm -f $SOCKET
-        start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
-
-	if [ -n "$SOCKETMODE" ]; then
-	    chmod $SOCKETMODE $SOCKET;
-	fi;
-
-        echo "${DAEMON}"
+	stop
+	start
+	echo "${DAEMON}"
 
 	;;
   *)
