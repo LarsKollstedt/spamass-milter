@@ -1,3 +1,17 @@
+spamass-milter (0.3.1-3) unstable; urgency=low
+
+  * spamass-milter now tries to run as non-root. This means that the
+    socket can no longer be located in /var/run/sendmail/spamass.sock and
+    must be moved to /var/run/spamass/spamass.sock. The init.d script
+    checks for the old location and reverts to running as root with a
+    warning. To switch to the new behavoir, change your
+    /etc/mail/localconf.m4 appropriately (or wherever you specify
+    milters.)
+  * spamass-milter now attempts to automatically detect postfix installs
+    and set up SOCKET, RUNAS, SOCKETOWNER, and SOCKETMODE appropriately.
+
+ -- Don Armstrong <don@debian.org>  Tue,  2 Jan 2007 07:53:11 -0800
+
 spamass-milter (0.3.0-2) unstable; urgency=low
 
   * spamass-milter now has a (currently not available upstream) -I option
