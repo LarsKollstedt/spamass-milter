@@ -80,7 +80,7 @@ start() {
     # Drop in a compatibility symlink for the old sendmail socket location
     if [ -d /var/run/sendmail ] && [ -n "$RUNAS" ] && 
 	[ "$SOCKET" == "/var/run/spamass/spamass.sock" ] && 
-	! [ -e /var/run/sendmail/spamass.sock ]; then
+	[ ! -L /var/run/sendmail/spamass.sock ] || [ ! -e /var/run/sendmail/spamass.sock ]; then
 	ln -s $SOCKET /var/run/sendmail/spamass.sock;
     fi;
     /bin/rm -f $SOCKET
