@@ -11,7 +11,7 @@ something like:
 
  # spamassassin settings
  INPUT_MAIL_FILTER(`spamassassin',
-         `S=local:/var/run/sendmail/spamass.sock, F=,
+         `S=local:/var/run/spamass/spamass.sock, F=,
          T=S:4m;R:4m;E:10m')dnl
 
 Briefly, the F=, tells sendmail to just pass the connection through if
@@ -42,7 +42,7 @@ You need to edit /etc/postfix/main.cf and configure smptpd_milters so
 that postfix connects to the spamass-milter socket. Something like:
 
   # spamass-milter configuration
-  smtpd_milters = unix:/var/run/postfix/spamass.sock
+  smtpd_milters = unix:/var/spool/postfix/spamass/spamass.sock
 
 should work. See http://www.postfix.org/MILTER_README.html or
 /usr/share/doc/postfix/MILTER_README.gz (in postfix-doc) for
@@ -90,4 +90,4 @@ q
 
 and send the results along with your bug report using reportbug.
 
- -- Don Armstrong <don@debian.org>, Fri, 13 Oct 2006 01:03:04 -0700
+ -- Don Armstrong <don@debian.org>, Tue,  2 Jan 2007 06:40:24 -0800
