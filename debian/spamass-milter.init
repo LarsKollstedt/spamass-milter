@@ -87,7 +87,7 @@ start() {
 	    chown "$RUNAS" $(dirname $PIDFILE);
 	fi;
     fi;
-    if [ -n "$RUNAS" ] && [ -d $(dirname $PIDFILE); ] && [ "$(stat -c '%U' $(dirname $PIDFILE))" = "$RUNAS" ]; then
+    if [ -n "$RUNAS" ] && [ -d $(dirname $PIDFILE) ] && [ "$(stat -c '%U' $(dirname $PIDFILE))" = "$RUNAS" ]; thenx
 	echo "WARNING: $NAME will run as user $RUNAS but $(dirname $PIDFILE) is not owned by $RUNAS"
 	echo "Either delete this directory or chown it appropriately. Startup attempts may fail."
     fi;
