@@ -32,6 +32,7 @@
 
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
+NAME=spamass-milter
 DAEMON=/usr/sbin/spamass-milter
 SOCKET=/var/run/spamass/spamass.sock
 PIDFILE=/var/run/spamass/spamass.pid
@@ -59,7 +60,6 @@ fi;
 # These can be overridden in /etc/default/spamass-milter
 if [ -x /usr/sbin/postfix ]; then
     SOCKET="/var/spool/postfix/spamass/spamass.sock"
-    PIDFILE="/var/spool/postfix/spamass/spamass.pid"
     SOCKETOWNER="postfix:postfix"
     SOCKETMODE="0660"
 fi;
@@ -83,9 +83,13 @@ start() {
     fi;
     if [ ! -d $(dirname $PIDFILE) ]; then
 	mkdir -p $(dirname $PIDFILE);
-	if [ -n "$RUNAS" ]; then
+	if [ -d $(dirname $PIDFILE) ] && [ -n "$RUNAS" ]; then
 	    chown "$RUNAS" $(dirname $PIDFILE);
 	fi;
+    fi;
+    if [ -n "$RUNAS" ] && [ -d $(dirname $PIDFILE); ] && [ "$(stat -c '%U' $(dirname $PIDFILE))" = "$RUNAS" ]; then
+	echo "WARNING: $NAME will run as user $RUNAS but $(dirname $PIDFILE) is not owned by $RUNAS"
+	echo "Either delete this directory or chown it appropriately. Startup attempts may fail."
     fi;
     /bin/rm -f $SOCKET
     start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
@@ -108,19 +112,19 @@ case "$1" in
   start)
 	echo -n "Starting $DESC: "
 	start
-	echo "${DAEMON}"
+	echo "${NAME}"
 	;;
   stop)
 	echo -n "Stopping $DESC: "
 	stop
-	echo "${DAEMON}"
+	echo "${NAME}"
 	;;
   force-reload | restart)
 	echo -n "Restarting $DESC: "
 
 	stop
 	start
-	echo "${DAEMON}"
+	echo "${NAME}"
 
 	;;
   *)
