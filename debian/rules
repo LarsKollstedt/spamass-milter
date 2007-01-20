@@ -72,6 +72,7 @@ install: build
 
 	$(MAKE) install
 
+binary-indep:
 
 binary-arch: build install
 	dh_testdir
@@ -91,4 +92,4 @@ binary-arch: build install
 	dh_builddeb
 
 binary: binary-arch
-.PHONY: build clean binary-arch binary install
+.PHONY: build clean binary-arch binary-indep binary install
