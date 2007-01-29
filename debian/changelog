@@ -1,3 +1,11 @@
+spamass-milter (0.3.1-4) unstable; urgency=low
+
+  * Flip the order of socket and piddir creation, because the default for
+    sendmail has them in the same directory. [This was breaking new
+    sendmail installs.]
+
+ -- Don Armstrong <don@debian.org>  Sun, 28 Jan 2007 17:43:53 -0800
+
 spamass-milter (0.3.1-3) unstable; urgency=low
 
   * Use dirname instead of basename (closes: #391909)
