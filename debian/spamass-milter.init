@@ -75,16 +75,18 @@ fi;
 set -e
 
 start() {
-    if [ ! -d $(dirname $SOCKET) ]; then
-	mkdir -p $(dirname $SOCKET);
-	if [ -n "$SOCKETOWNER" ]; then
-	    chown "$SOCKETOWNER" $(dirname $SOCKET);
-	fi;
-    fi;
+    # Because the default socket is in the same location as the
+    # pidfile, we create them in this order.
     if [ ! -d $(dirname $PIDFILE) ]; then
 	mkdir -p $(dirname $PIDFILE);
 	if [ -d $(dirname $PIDFILE) ] && [ -n "$RUNAS" ]; then
 	    chown "$RUNAS" $(dirname $PIDFILE);
+	fi;
+    fi;
+    if [ ! -d $(dirname $SOCKET) ]; then
+	mkdir -p $(dirname $SOCKET);
+	if [ -n "$SOCKETOWNER" ]; then
+	    chown "$SOCKETOWNER" $(dirname $SOCKET);
 	fi;
     fi;
     if [ -n "$RUNAS" ] && [ -d $(dirname $PIDFILE) ] && [ "$(stat -c '%U' $(dirname $PIDFILE))" != "$RUNAS" ]; then
