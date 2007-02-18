@@ -40,7 +40,7 @@ DESC="Sendmail milter plugin for SpamAssassin"
 
 DEFAULT=/etc/default/spamass-milter
 OPTIONS=""
-RUNAS="spamassmilter"
+RUNAS="spamass-milter"
 CHUID=""
 SOCKETMODE="0600"
 SOCKETOWNER="root:root"
@@ -53,7 +53,7 @@ if [ -e /etc/mail/sendmail.cf ] && egrep -q 'X.+S=local:/var/run/sendmail/spamas
     SOCKETOWNER=""
     RUNAS=""
     echo "WARNING: You are using the old location of spamass.sock. Change your input filter to use";
-    echo "/var/run/spamass/spamass.sock so spamass-milter can run as spamassmilter";
+    echo "/var/run/spamass/spamass.sock so spamass-milter can run as spamass-milter";
 fi;
 
 # If /usr/sbin/postfix exists, set up the defaults for a postfix install
