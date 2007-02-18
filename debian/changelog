@@ -1,3 +1,10 @@
+spamass-milter (0.3.1-5) unstable; urgency=low
+
+  * Run spamass-milter as a new user, spamassmilter instead of nobody
+    (closes: #411094)
+
+ -- Don Armstrong <don@debian.org>  Fri, 16 Feb 2007 20:49:24 -0800
+
 spamass-milter (0.3.1-4) unstable; urgency=low
 
   * Flip the order of socket and piddir creation, because the default for
