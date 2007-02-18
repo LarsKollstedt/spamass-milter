@@ -9,7 +9,7 @@ Package: spamass-milter
 Section: mail
 Priority: extra
 Architecture: any
-Depends: ${shlibs:Depends}, spamc
+Depends: ${shlibs:Depends}, spamc, adduser
 Recommends: spamassassin, sendmail|postfix
 Description: milter for filtering mail through spamassassin
  A milter used to filter mail through spamassassin (spamc)

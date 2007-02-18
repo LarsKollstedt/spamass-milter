@@ -19,6 +19,6 @@ OPTIONS="-u nobody -i 127.0.0.1"
 # here.
 ######################################
 # SOCKET="/var/spool/postfix/spamass/spamass.sock"
-# PIDFILE="/var/spool/postfix/spamass/spamass.pid"
 # SOCKETOWNER="postfix:postfix"
+# SOCKETMODE="0660"
 ######################################
