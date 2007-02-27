@@ -2,8 +2,10 @@ spamass-milter (0.3.1-5) unstable; urgency=low
 
   * Run spamass-milter as a new user, spamassmilter instead of nobody
     (closes: #411094)
+  * Use --oknodo in stop so we don't fail when spamassmilter is not running
+    (closes: #412524)
 
- -- Don Armstrong <don@debian.org>  Fri, 16 Feb 2007 20:49:24 -0800
+ -- Don Armstrong <don@debian.org>  Mon, 26 Feb 2007 17:26:33 -0800
 
 spamass-milter (0.3.1-4) unstable; urgency=low
 
