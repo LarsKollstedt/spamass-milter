@@ -109,7 +109,7 @@ start() {
 }
 
 stop(){
-    start-stop-daemon --stop -p $PIDFILE --signal 3 --exec $DAEMON
+    start-stop-daemon --oknodo --stop -p $PIDFILE --signal 3 --exec $DAEMON
     /bin/sleep 5s
     /bin/rm -f $SOCKET
     /bin/rm -f $PIDFILE
