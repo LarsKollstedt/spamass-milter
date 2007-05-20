@@ -37,7 +37,8 @@ configure-stamp:
 
 # SPAMC and SENDMAIL are the location of the spamc and sendmail binary, respectively. PREFIX is the location to install to.
 # We must specify --mandir because for some ungodly reason, it's being installed into /usr/man by default
-	SPAMC="/usr/bin/spamc" SENDMAIL="/usr/sbin/sendmail" ./configure --prefix=$(PREFIX) --mandir=$(PREFIX)/share/man
+	LDFLAGS="-L/usr/lib/libmilter" SPAMC="/usr/bin/spamc" SENDMAIL="/usr/sbin/sendmail" \
+		./configure --prefix=$(PREFIX) --mandir=$(PREFIX)/share/man
 	touch $@
 
 build: configure build-stamp
