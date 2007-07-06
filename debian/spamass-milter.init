@@ -30,6 +30,21 @@
 # allow force-reload and options specified in
 # /etc/default/spamass-milter necessary for inclusion in debian.
 
+# It has been modified additionally to support LSB Boot options and
+# status on Friday, July 6, 2007 14:02:44 PDT
+
+
+### BEGIN INIT INFO
+# Provides:          spamass-milter
+# Required-Start:    $syslog $local_fs
+# Required-Stop:     $syslog $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: milter for spamassassin
+# Description:       Calls spamassassin to allow filtering out
+#                    spam from ham in libmilter compatible MTAs.
+### END INIT INFO
+
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 NAME=spamass-milter
@@ -115,6 +130,20 @@ stop(){
     /bin/rm -f $PIDFILE
 }
 
+status(){
+    if [ -e $PIDFILE ]; then 
+	if kill -0 $(cat $PIDFILE); then
+	    echo "${NAME} running";
+	    exit 0;
+	else
+	    echo "${NAME} dead but $PIDFILE exists";
+	    exit 1;
+	fi;
+	echo "${NAME} not running";
+	exit 3;
+    fi;
+}
+
 case "$1" in
   start)
 	echo -n "Starting $DESC: "
@@ -132,11 +161,13 @@ case "$1" in
 	stop
 	start
 	echo "${NAME}"
-
+	;;
+  status)
+	status
 	;;
   *)
 	N=$0
-	echo "Usage: $N {start|stop|restart}" >&2
+	echo "Usage: $N {start|stop|restart|force-reload|status}" >&2
 	exit 1
 	;;
 esac
