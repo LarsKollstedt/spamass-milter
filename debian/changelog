@@ -1,3 +1,10 @@
+spamass-milter (0.3.1-7) UNRELEASED; urgency=low
+
+  * Add LSB options to init script
+  * Add status init script command support
+
+ -- Don Armstrong <don@debian.org>  Fri, 06 Jul 2007 14:14:41 -0700
+
 spamass-milter (0.3.1-6) unstable; urgency=low
 
   * New version to allow building against libmilter1
