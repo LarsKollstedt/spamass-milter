@@ -1,7 +1,7 @@
 Source: spamass-milter
 Section: mail
 Priority: extra
-Standards-Version: 3.7.2
+Standards-Version: 3.7.3
 Build-Depends: libmilter-dev, debhelper (>= 4), groff-base
 Maintainer: Don Armstrong <don@debian.org>
 

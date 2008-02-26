@@ -1,9 +1,9 @@
-spamass-milter (0.3.1-7) UNRELEASED; urgency=low
+spamass-milter (0.3.1-7) unstable; urgency=low
 
-  * Add LSB options to init script
+  * Add LSB options to init script (closes: #467145)
   * Add status init script command support
 
- -- Don Armstrong <don@debian.org>  Fri, 06 Jul 2007 14:14:41 -0700
+ -- Don Armstrong <don@debian.org>  Mon, 25 Feb 2008 16:00:57 -0800
 
 spamass-milter (0.3.1-6) unstable; urgency=low
 
