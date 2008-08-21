@@ -1,3 +1,12 @@
+spamass-milter (0.3.1-8) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+  * Update the documentation in README.Debian to indicate that a different
+    path to the postfix socket may be required in chrooted postfix
+    installs (closes: #496003)
+
+ -- Don Armstrong <don@debian.org>  Thu, 21 Aug 2008 16:54:35 -0700
+
 spamass-milter (0.3.1-7) unstable; urgency=low
 
   * Add LSB options to init script (closes: #467145)

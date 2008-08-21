@@ -47,14 +47,21 @@ that postfix connects to the spamass-milter socket. Something like:
   # spamass-milter configuration
   smtpd_milters = unix:/var/spool/postfix/spamass/spamass.sock
 
-should work. See http://www.postfix.org/MILTER_README.html or
+should work. Note, however, if you're using a chrooted version of
+postfix, you'll need the local path to the socket inside of the
+chroot. In recent versions of Debian the following should work:
+
+  # spamass-milter configuration
+  smtpd_milters = unix:/spamass/spamass.sock
+
+See http://www.postfix.org/MILTER_README.html or
 /usr/share/doc/postfix/MILTER_README.gz (in postfix-doc) for
 information on how to set tempfail and the various timeouts that the
 sendmail configuration above uses.
 
-You'll also want to change /etc/default/spamass-milter to use the
-SOCKET above, and also enable RUNAS so that it runs as the same user
-that will be connecting to the socket.
+The defaults for spamass-milter adjust themselves so that no
+configuration in /etc/default/milter should be required. [However, if
+you are not doing so, see below.]
 
 -------------------------------------------------------------
   Adjusting how spamass-milter is started
@@ -62,7 +69,23 @@ that will be connecting to the socket.
 
 You can adjust how spamass-milter starts, and the options it calls
 spamc with by adjusting /etc/default/spamass-milter. OPTIONS is passed
-directly to spamass-milter by /etc/init.d/spamass-milter.
+directly to spamass-milter by /etc/init.d/spamass-milter. [Refer to
+spamass-milter(1) for details.]
+
+Other settings which may be of use:
+
+SOCKET sets the location of the socket; defaults to
+/var/run/spamass/spamass.sock unless you are running postfix, where it
+is set to /var/spool/postfix/spamass/spamass.sock.
+
+SOCKETOWNER is the owner of the socket, which defaults to root:root or
+postfix:postfix if you're running postfix.
+
+SOCKETMODE is the mode of the socket, which defaults to 0600 or 0660
+if you're running postfix.
+
+RUNAS controls the user which spamass-milter runs as; defaults to
+spamass-milter.
 
 -------------------------------------------------------------
 Debugging spamass-milter
@@ -93,4 +116,4 @@ q
 
 and send the results along with your bug report using reportbug.
 
- -- Don Armstrong <don@debian.org>, Tue,  2 Jan 2007 08:22:46 -0800
+ -- Don Armstrong <don@debian.org>, Thu, 21 Aug 2008 16:52:22 -0700
