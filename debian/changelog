@@ -4,8 +4,11 @@ spamass-milter (0.3.1-8) UNRELEASED; urgency=low
   * Update the documentation in README.Debian to indicate that a different
     path to the postfix socket may be required in chrooted postfix
     installs (closes: #496003)
+  * Update milter_connect_macros_line (thanks to Marco d'Itri)
+  * Fix the code to generate a sendmail-compatible header (thanks to Marco
+    d'Itri) (Closes: #510665).
 
- -- Don Armstrong <don@debian.org>  Thu, 21 Aug 2008 16:54:35 -0700
+ -- Don Armstrong <don@debian.org>  Mon, 05 Jan 2009 18:40:16 -0800
 
 spamass-milter (0.3.1-7) unstable; urgency=low
 
