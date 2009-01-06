@@ -1,3 +1,11 @@
+spamass-milter (0.3.1-6) unstable; urgency=low
+
+  * Note that users of postfix may wish to add "milter_connect_macros = j
+    {daemon_name} v {if_name} _" to their main.cf if they haven't already
+    done so. See README.Debian.
+
+ -- Don Armstrong <don@debian.org>  Mon, 05 Jan 2009 13:04:21 -0800
+
 spamass-milter (0.3.1-5) unstable; urgency=low
 
   * spamass-milter now tries to run as spamass-milter. This means that the
