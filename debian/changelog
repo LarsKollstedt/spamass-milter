@@ -1,6 +1,5 @@
-spamass-milter (0.3.1-8) UNRELEASED; urgency=low
+spamass-milter (0.3.1-8) unstable; urgency=low
 
-  * NOT RELEASED YET
   * Update the documentation in README.Debian to indicate that a different
     path to the postfix socket may be required in chrooted postfix
     installs (closes: #496003)
