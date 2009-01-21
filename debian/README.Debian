@@ -53,7 +53,7 @@ chroot. In recent versions of Debian the following should work:
 
   # spamass-milter configuration
   smtpd_milters = unix:/spamass/spamass.sock
-  # milter macros usefull for spamass-milter
+  # milter macros useful for spamass-milter
   milter_connect_macros = j {daemon_name} v {if_name} _
 
 See http://www.postfix.org/MILTER_README.html or
@@ -118,4 +118,4 @@ q
 
 and send the results along with your bug report using reportbug.
 
- -- Don Armstrong <don@debian.org>, Mon,  5 Jan 2009 13:03:36 -0800
+ -- Don Armstrong <don@debian.org>, Tue, 20 Jan 2009 19:39:51 -0800
