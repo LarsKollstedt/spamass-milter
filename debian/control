@@ -1,7 +1,7 @@
 Source: spamass-milter
 Section: mail
 Priority: extra
-Standards-Version: 3.7.3
+Standards-Version: 3.8.0
 Build-Depends: libmilter-dev, debhelper (>= 4), groff-base
 Maintainer: Don Armstrong <don@debian.org>
 
@@ -11,6 +11,7 @@ Priority: extra
 Architecture: any
 Depends: ${shlibs:Depends}, spamc, adduser
 Recommends: spamassassin, sendmail|postfix
+Homepage: http://savannah.nongnu.org/projects/spamass-milt/
 Description: milter for filtering mail through spamassassin
  A milter used to filter mail through spamassassin (spamc)
  early in the delivery process. Enables site wide filtering through
@@ -22,4 +23,3 @@ Description: milter for filtering mail through spamassassin
   - Administrator (or user) specified rejection threshold
   - User specific spamassassin settings
   - Header-only modification
- Homepage: http://savannah.nongnu.org/projects/spamass-milt/
