@@ -5,9 +5,11 @@ spamass-milter (0.3.1-8) unstable; urgency=low
     installs (closes: #496003)
   * Update milter_connect_macros_line (thanks to Marco d'Itri)
   * Fix the code to generate a sendmail-compatible header (thanks to Marco
-    d'Itri) (Closes: #510665).
+    d'Itri) (closes: #510665).
+  * Put Homepage in the proper location
+  * Update standards version with only the above change
 
- -- Don Armstrong <don@debian.org>  Mon, 05 Jan 2009 18:40:16 -0800
+ -- Don Armstrong <don@debian.org>  Fri, 23 Jan 2009 15:40:41 -0800
 
 spamass-milter (0.3.1-7) unstable; urgency=low
 
