@@ -37,6 +37,13 @@ See http://www.sendmail.com/partner/resources/development/milter_api/installatio
 and http://www.sendmail.org/m4/adding_mailfilters.html#INPUT_MAIL_FILTER
 for more information on milters.
 
+If you are using the alias expansion method, -x, you will need to add
+spamass-milter to the smmsp group using:
+
+ adduser spamass-milter smmsp;
+
+This does not need to be done unless you are using alias expansion.
+
 --------------------------------------------------------------
   Integrating spamass-milter into your postfix installation
 --------------------------------------------------------------
@@ -89,6 +96,14 @@ if you're running postfix.
 RUNAS controls the user which spamass-milter runs as; defaults to
 spamass-milter.
 
+If you want to use an inet socket for spamass-milter (like inet:9999),
+then you'll need to make the following configuration changes in
+/etc/default/spamass-milter:
+
+SOCKET="inet:9999"
+SOCKETMODE=""
+SOCKETOWNER=""
+
 -------------------------------------------------------------
 Debugging spamass-milter
 -------------------------------------------------------------
@@ -118,4 +133,4 @@ q
 
 and send the results along with your bug report using reportbug.
 
- -- Don Armstrong <don@debian.org>, Tue, 20 Jan 2009 19:39:51 -0800
+ -- Don Armstrong <don@debian.org>, Fri, 13 Feb 2009 18:06:39 -0800

@@ -1,3 +1,14 @@
+spamass-milter (0.3.1-9) unstable; urgency=low
+
+  * Document that using the -x option requires being in the smmsp group
+    (closes: #515158)
+  * Deal with inet:999 sockets (closes: #514749)
+    - handle them more sanely in the init script
+    - document how to deal with them in README.Debian and
+      /etc/spamass-milter/default
+
+ -- Don Armstrong <don@debian.org>  Fri, 13 Feb 2009 18:13:04 -0800
+
 spamass-milter (0.3.1-8) unstable; urgency=low
 
   * Update the documentation in README.Debian to indicate that a different
