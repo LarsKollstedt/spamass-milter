@@ -2,7 +2,7 @@ spamass-milter (0.3.1-9) UNRELEASED; urgency=low
 
   * Call restorecon on the socket and pidfile directories to make SELinux
     happy (thanks to Russel Coker) (closes: #518552)
-  * Document how to make inet:9999@127.0.0.1 work (closes: #519425)
+  * Document how to make inet:9999@127.0.0.1 work (closes: #519245)
   * Document that using the -x option requires being in the smmsp group
     (closes: #515158)
   * Deal with inet:999 sockets (closes: #514749)
