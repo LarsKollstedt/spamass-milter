@@ -1,3 +1,10 @@
+spamass-milter (0.3.1-10) UNRELEASED; urgency=low
+
+  * Call restorecon on the socket and pidfile directories to make SELinux
+    happy (thanks to Russel Coker) (closes: #518552)
+
+ -- Don Armstrong <don@debian.org>  Wed, 11 Mar 2009 03:44:35 -0700
+
 spamass-milter (0.3.1-9) unstable; urgency=low
 
   * Document that using the -x option requires being in the smmsp group
