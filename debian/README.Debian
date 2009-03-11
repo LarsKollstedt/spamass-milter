@@ -96,11 +96,11 @@ if you're running postfix.
 RUNAS controls the user which spamass-milter runs as; defaults to
 spamass-milter.
 
-If you want to use an inet socket for spamass-milter (like inet:9999),
-then you'll need to make the following configuration changes in
-/etc/default/spamass-milter:
+If you want to use an inet socket for spamass-milter (like inet:9999
+or inet:9999@127.0.0.1), then you'll need to make the following
+configuration changes in /etc/default/spamass-milter:
 
-SOCKET="inet:9999"
+SOCKET="inet:9999@127.0.0.1"
 SOCKETMODE=""
 SOCKETOWNER=""
 
@@ -133,4 +133,4 @@ q
 
 and send the results along with your bug report using reportbug.
 
- -- Don Armstrong <don@debian.org>, Fri, 13 Feb 2009 18:06:39 -0800
+ -- Don Armstrong <don@debian.org>, Wed, 11 Mar 2009 03:51:55 -0700

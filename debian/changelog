@@ -2,6 +2,7 @@ spamass-milter (0.3.1-10) UNRELEASED; urgency=low
 
   * Call restorecon on the socket and pidfile directories to make SELinux
     happy (thanks to Russel Coker) (closes: #518552)
+  * Document how to make inet:9999@127.0.0.1 work (closes: #519425)
 
  -- Don Armstrong <don@debian.org>  Wed, 11 Mar 2009 03:44:35 -0700
 
