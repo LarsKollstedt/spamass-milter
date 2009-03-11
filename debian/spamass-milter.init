@@ -92,20 +92,19 @@ set -e
 start() {
     # Because the default socket is in the same location as the
     # pidfile, we create them in this order.
-    if [ ! -d $(dirname $PIDFILE) ]; then
-	mkdir -p $(dirname $PIDFILE);
-	if [ -d $(dirname $PIDFILE) ] && [ -n "$RUNAS" ]; then
-	    chown "$RUNAS" $(dirname $PIDFILE);
-	fi;
-    fi;
+    for DIR in "$(dirname $PIDFILE)" "$(dirname $SOCKET)"; do 
     # if the dirname is '.', then it's some kind of odd socket, like
     # an inet socket. Don't create the directory in such a case
-    if [ $(dirname $SOCKET) != "." ] && [ ! -d $(dirname $SOCKET) ]; then
-	mkdir -p $(dirname $SOCKET);
-	if [ -n "$SOCKETOWNER" ]; then
-	    chown "$RUNAS" $(dirname $SOCKET);
+	if [ "$DIR" != "." ] && [ ! -d "$DIR" ]; then
+	    mkdir -p "$DIR";
+	    if [ -x /sbin/restorecon ]; then 
+		/sbin/restorecon "$DIR";
+	    fi;
+	    if [ -n "$RUNAS" ]; then
+		chown "$RUNAS" "$DIR";
+	    fi;
 	fi;
-    fi;
+    done;
     if [ -n "$RUNAS" ] && [ -d $(dirname $PIDFILE) ] &&
 	[ "$(stat -c '%U' $(dirname $PIDFILE))" != "$RUNAS" ]; then
 	echo "WARNING: $NAME will run as user $RUNAS but $(dirname $PIDFILE) is not owned by $RUNAS";
