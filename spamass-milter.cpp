@@ -816,6 +816,7 @@ sfsistat
 mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 {
 	struct context *sctx;
+	const char *macro_j, *macro__;
 	int rv;
 
 	debug(D_FUNC, "mlfi_connect: enter");
@@ -840,8 +841,31 @@ mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	}
 	sctx->assassin = NULL;
 	sctx->helo = NULL;
+	sctx->our_fqdn = NULL;
+	sctx->sender_address = NULL;
+	sctx->queueid = NULL;
+	sctx->auth_authen = NULL;
+	sctx->auth_ssf = NULL;
 	
-	/* store a pointer to it with setpriv */
+	/* store our FQDN */
+	macro_j = smfi_getsymval(ctx, const_cast<char *>("j"));
+	if (!macro_j)
+	{
+		macro_j = "localhost";
+		warnmacro("j", "CONNECT");
+	}
+	sctx->our_fqdn = strdup(macro_j);
+
+	/* store the validated sending site's address */
+	macro__ = smfi_getsymval(ctx, const_cast<char *>("_"));
+	if (!macro__)
+	{
+		macro__ = "unknown";
+		warnmacro("_", "CONNECT");
+	}
+	sctx->sender_address = strdup(macro__);
+
+	/* store a pointer to our private data with setpriv */
 	rv = smfi_setpriv(ctx, sctx);
 	if (rv != MI_SUCCESS)
 	{
@@ -968,7 +992,7 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
 {
   SpamAssassin* assassin;
   struct context *sctx = (struct context *)smfi_getpriv(ctx);
-  const char *queueid;
+  const char *queueid, *macro_auth_ssf, *macro_auth_authen;
 
   if (sctx == NULL)
   {
@@ -1012,14 +1036,14 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
   // remember the MAIL FROM address
   assassin->set_from(string(envfrom[0]));
   
+  // remember the queueid for this message
   queueid=smfi_getsymval(ctx, const_cast<char *>("i"));
   if (!queueid)
   {
     queueid="unknown";
     warnmacro("i", "ENVFROM");
   }
-  assassin->queueid = queueid;
-
+  sctx->queueid = strdup(queueid);
   debug(D_MISC, "queueid=%s", queueid);
 
   // remember the MAIL FROM address
@@ -1118,7 +1142,8 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		   
 		*/
 		const char *macro_b, *macro_i, *macro_j, *macro_r,
-		           *macro_s, *macro_v, *macro_Z, *macro__;
+		           *macro_s, *macro_v, *macro_Z, *macro__,
+			   *macro_auth_ssf, *macro_auth_authen;
 		char date[32];
 
 		/* RFC 822 date. */
@@ -1133,20 +1158,13 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* queue ID */
-		macro_i = smfi_getsymval(ctx, const_cast<char *>("i"));
-		if (!macro_i)
-		{
-			macro_i = "unknown";
-			warnmacro("i", "ENVRCPT");
-		}
+		macro_i = sctx->queueid;
 
-		/* FQDN of this site */
-		macro_j = smfi_getsymval(ctx, const_cast<char *>("j"));
-		if (!macro_j)
-		{
-			macro_j = "localhost";
-			warnmacro("j", "ENVRCPT");
-		}
+		/* FQDN */
+		macro_j = sctx->our_fqdn;
+
+		/* Sender address */
+		macro__ = sctx->sender_address;
 
 		/* Protocol used to receive the message */
 		macro_r = smfi_getsymval(ctx, const_cast<char *>("r"));
@@ -1156,6 +1174,10 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 			warnmacro("r", "ENVRCPT");
 		}
 			
+		/* SMTP AUTH details */
+		macro_auth_authen = sctx->auth_authen;
+		macro_auth_ssf = sctx->auth_ssf;
+
 		/* Sendmail currently cannot pass us the {s} macro, but
 		   I do not know why.  Leave this in for the day sendmail is
 		   fixed.  Until that day, use the value remembered by
@@ -1183,22 +1205,25 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 			warnmacro("Z", "ENVRCPT");
 		}
 
-		/* Validated sending site's address */
-		macro__ = smfi_getsymval(ctx, const_cast<char *>("_"));
-		if (!macro__)
-		{
-			macro__ = "unknown";
-			warnmacro("_", "ENVRCPT");
-		}
-
 		assassin->output((string)"X-Envelope-From: "+assassin->from()+"\r\n");
 		assassin->output((string)"X-Envelope-To: "+envrcpt[0]+"\r\n");
 
-		assassin->output((string)
-			"Received: from "+macro_s+" ("+macro__+")\r\n\t"+
-			"by "+macro_j+" ("+macro_v+"/"+macro_Z+") with "+macro_r+" id "+macro_i+";\r\n\t"+
-			macro_b+"\r\n\t"+
-			"(envelope-from "+assassin->from()+")\r\n");
+		string rec_header;
+
+		rec_header = (string) "Received: from " + macro_s + " (" + macro__ + ")\r\n\t";
+
+		if (strlen(macro_auth_ssf))
+		{
+			rec_header += (string) "(authenticated bits=" + macro_auth_ssf + ")\r\n\t";
+		}
+
+		rec_header += (string) "by " + macro_j + " (" + macro_v + "/" + macro_Z + ") with " +
+			macro_r + " id " + macro_i + ";\r\n\t" +
+			macro_b + "\r\n\t" +
+			"(envelope-from " + assassin->from() + ")\r\n";
+
+		debug(D_SPAMC, "Received header for spamc: %s", rec_header.c_str());
+		assassin->output(rec_header);
 
 	} else
 		assassin->output((string)"X-Envelope-To: "+envrcpt[0]+"\r\n");
@@ -1672,6 +1697,17 @@ mlfi_close(SMFICTX* ctx)
 
   if (sctx->helo)
   	free(sctx->helo);
+  if (sctx->our_fqdn)
+ 	free(sctx->our_fqdn);
+  if (sctx->sender_address)
+ 	free(sctx->sender_address);
+  if (sctx->queueid)
+ 	free(sctx->queueid);
+  if (sctx->auth_authen)
+ 	free(sctx->auth_authen);
+  if (sctx->auth_ssf)
+ 	free(sctx->auth_ssf);
+
   free(sctx);
   smfi_setpriv(ctx, NULL);
   
