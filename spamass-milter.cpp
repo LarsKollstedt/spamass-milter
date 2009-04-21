@@ -771,6 +771,7 @@ sfsistat
 mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 {
 	struct context *sctx;
+	const char *macro_j, *macro__;
 	int rv;
 
 	debug(D_FUNC, "mlfi_connect: enter");
@@ -795,8 +796,31 @@ mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	}
 	sctx->assassin = NULL;
 	sctx->helo = NULL;
+	sctx->our_fqdn = NULL;
+	sctx->sender_address = NULL;
+	sctx->queueid = NULL;
+	sctx->auth_authen = NULL;
+	sctx->auth_ssf = NULL;
 	
-	/* store a pointer to it with setpriv */
+	/* store our FQDN */
+	macro_j = smfi_getsymval(ctx, const_cast<char *>("j"));
+	if (!macro_j)
+	{
+		macro_j = "localhost";
+		warnmacro("j", "CONNECT");
+	}
+	sctx->our_fqdn = strdup(macro_j);
+
+	/* store the validated sending site's address */
+	macro__ = smfi_getsymval(ctx, const_cast<char *>("_"));
+	if (!macro__)
+	{
+		macro__ = "unknown";
+		warnmacro("_", "CONNECT");
+	}
+	sctx->sender_address = strdup(macro__);
+
+	/* store a pointer to our private data with setpriv */
 	rv = smfi_setpriv(ctx, sctx);
 	if (rv != MI_SUCCESS)
 	{
