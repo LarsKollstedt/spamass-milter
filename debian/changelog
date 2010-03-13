@@ -9,6 +9,8 @@ spamass-milter (0.3.1-9) UNRELEASED; urgency=low
     - handle them more sanely in the init script
     - document how to deal with them in README.Debian and
       /etc/spamass-milter/default
+  * Use new popenenv function instead of open; fixes remote code exploit
+    as the spamass-milter user when run using -x. (closes: #573228)
 
  -- Don Armstrong <don@debian.org>  Wed, 11 Mar 2009 03:59:39 -0700
 
