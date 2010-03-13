@@ -186,5 +186,6 @@ int ip_in_networklist(struct in_addr ip, struct networklist *list);
 void parse_debuglevel(char* string);
 char *strlwr(char *str);
 void warnmacro(char *macro, char *scope);
+FILE *popenv(char *const argv[], const char *type);
 
 #endif
