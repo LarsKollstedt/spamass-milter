@@ -1,4 +1,4 @@
-spamass-milter (0.3.1-9) UNRELEASED; urgency=low
+spamass-milter (0.3.1-9) unstable; urgency=high
 
   * Call restorecon on the socket and pidfile directories to make SELinux
     happy (thanks to Russel Coker) (closes: #518552)
