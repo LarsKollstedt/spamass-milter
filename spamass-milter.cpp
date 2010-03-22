@@ -350,7 +350,7 @@ main(int argc, char* argv[])
    /* Set up sigaction to avoid having to reap children */
    memset(&children_sigaction, 0, sizeof children_sigaction);
    children_sigaction.sa_flags = SA_NOCLDWAIT;
-   sigaction(SIG_CHLD,&children_sigaction,0);
+   sigaction(SIGCHLD,&children_sigaction,0);
 
 
    (void) smfi_setconn(sock);
