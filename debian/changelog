@@ -1,3 +1,9 @@
+spamass-milter (0.3.1-10) unstable; urgency=low
+
+  * Fix zombies which were happening with -x. (closes: #575019)
+
+ -- Don Armstrong <don@debian.org>  Mon, 22 Mar 2010 14:39:12 -0700
+
 spamass-milter (0.3.1-9) unstable; urgency=high
 
   * Call restorecon on the socket and pidfile directories to make SELinux
