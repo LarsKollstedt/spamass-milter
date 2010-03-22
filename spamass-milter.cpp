@@ -192,6 +192,7 @@ main(int argc, char* argv[])
    bool dofork = false;
    char *pidfilename = NULL;
    FILE *pidfile = NULL;
+   struct sigaction children_sigaction;
 
 #ifdef HAVE_VERBOSE_TERMINATE_HANDLER
 	std::set_terminate (__gnu_cxx::__verbose_terminate_handler);
@@ -388,6 +389,13 @@ main(int argc, char* argv[])
       struct stat junk;
       if (stat(sock,&junk) == 0) unlink(sock);
    }
+
+   /* We don't care about any of our children, so ignore all of them */
+   /* Set up sigaction to avoid having to reap children */
+   memset(&children_sigaction, 0, sizeof children_sigaction);
+   children_sigaction.sa_flags = SA_NOCLDWAIT;
+   sigaction(SIG_CHLD,&children_sigaction,0);
+
 
    (void) smfi_setconn(sock);
 	if (smfi_register(smfilter) == MI_FAILURE) {
