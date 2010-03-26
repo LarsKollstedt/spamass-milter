@@ -390,13 +390,6 @@ main(int argc, char* argv[])
       if (stat(sock,&junk) == 0) unlink(sock);
    }
 
-   /* We don't care about any of our children, so ignore all of them */
-   /* Set up sigaction to avoid having to reap children */
-   memset(&children_sigaction, 0, sizeof children_sigaction);
-   children_sigaction.sa_flags = SA_NOCLDWAIT;
-   sigaction(SIGCHLD,&children_sigaction,0);
-
-
    (void) smfi_setconn(sock);
 	if (smfi_register(smfilter) == MI_FAILURE) {
 		fprintf(stderr, "smfi_register failed\n");
