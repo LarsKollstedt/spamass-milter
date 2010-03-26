@@ -346,13 +346,6 @@ main(int argc, char* argv[])
       if (stat(sock,&junk) == 0) unlink(sock);
    }
 
-   /* We don't care about any of our children, so ignore all of them */
-   /* Set up sigaction to avoid having to reap children */
-   memset(&children_sigaction, 0, sizeof children_sigaction);
-   children_sigaction.sa_flags = SA_NOCLDWAIT;
-   sigaction(SIGCHLD,&children_sigaction,0);
-
-
    (void) smfi_setconn(sock);
 	if (smfi_register(smfilter) == MI_FAILURE) {
 		fprintf(stderr, "smfi_register failed\n");
@@ -473,13 +466,14 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
 			   the only way to do it. */
 			char *popen_argv[3];
 			FILE *p;
+			pid_t pid;
 
 			popen_argv[0] = SENDMAIL;
 			popen_argv[1] = spambucket;
 			popen_argv[2] = NULL;
 			
 			debug(D_COPY, "calling %s %s", SENDMAIL, spambucket);
-			p = popenv(popen_argv, "w");
+			p = popenv(popen_argv, "w",&pid);
 			if (!p)
 			{
 				debug(D_COPY, "popenv failed(%s).  Will not send a copy to spambucket", strerror(errno));
@@ -488,6 +482,7 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
 				// Send message provided by SpamAssassin
 				fwrite(assassin->d().c_str(), assassin->d().size(), 1, p);
 				fclose(p); p = NULL;
+				waitpid(pid,0,0);
 			}
 		}
 		return SMFIS_REJECT;
@@ -834,6 +829,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 
 		char buf[1024];
 		char *popen_argv[4];
+		pid_t pid;
 		
 		popen_argv[0] = SENDMAIL;
 		popen_argv[1] = "-bv";
@@ -842,7 +838,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 
 		debug(D_RCPT, "calling %s -bv %s", SENDMAIL, envrcpt[0]);
 
-		p = popenv(popen_argv, "r");
+		p = popenv(popen_argv, "r", &pid);
 		if (!p)
 		{
 			debug(D_RCPT, "popenv failed(%s).  Will not expand aliases", strerror(errno));
@@ -871,6 +867,8 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 				}
 			}
 			fclose(p); p = NULL;
+			waitpid(pid,0,0);
+
 		}
 	} else
 	{
@@ -2134,12 +2132,11 @@ void warnmacro(char *macro, char *scope)
    for simplicity, and always reads stdout and stderr in "r" mode.  Call
    fclose to close the FILE.
 */
-FILE *popenv(char *const argv[], const char *type)
+FILE *popenv(char *const argv[], const char *type, pid_t *pid)
 {
 	FILE *iop;
 	int pdes[2];
 	int save_errno;
-	pid_t pid;
 
 	if ((*type != 'r' && *type != 'w') || type[1])
 	{
@@ -2149,8 +2146,8 @@ FILE *popenv(char *const argv[], const char *type)
 	if (pipe(pdes) < 0)
 		return (NULL);
 	
-	pid = fork();
-	switch (pid) {
+	*pid = fork();
+	switch (*pid) {
 	
 	case -1:			/* Error. */
 		save_errno = errno;
