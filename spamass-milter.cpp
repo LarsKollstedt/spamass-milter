@@ -178,10 +178,6 @@ bool flag_expand = false;	/* alias/virtusertable expansion */
 bool warnedmacro = false;	/* have we logged that we couldn't fetch a macro? */
 bool auth = false;		/* don't scan authenticated users */
 
-#if defined(__FreeBSD__) /* popen bug - see PR bin/50770 */
-static pthread_mutex_t popen_mutex = PTHREAD_MUTEX_INITIALIZER;
-#endif
-
 // {{{ main()
 
 int
@@ -1210,30 +1206,20 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 	/* open a pipe to sendmail so we can do address expansion */
 
 		char buf[1024];
-		char *fmt="%s -bv \"%s\" 2>&1";
+		char *popen_argv[4];
+		pid_t pid;
 
-#if defined(HAVE_SNPRINTF)
-		snprintf(buf, sizeof(buf)-1, fmt, SENDMAIL, envrcpt[0]);
-#else
-		/* XXX possible buffer overflow here */
-		sprintf(buf, fmt, SENDMAIL, envrcpt[0]);
-#endif
+		popen_argv[0] = SENDMAIL;
+		popen_argv[1] = "-bv";
+		popen_argv[2] = envrcpt[0];
+		popen_argv[3] = NULL;
 
-	debug(D_RCPT, "calling %s", buf);
+		debug(D_RCPT, "calling %s -bv %s", SENDMAIL, envrcpt[0]);
 
-#if defined(__FreeBSD__) /* popen bug - see PR bin/50770 */
-	rv = pthread_mutex_lock(&popen_mutex);
-	if (rv)
-	{
-		debug(D_ALWAYS, "Could not lock popen mutex: %s", strerror(rv));
-		abort();
-	}		
-#endif
-
-	p = popen(buf, "r");
+		p = popenv(popen_argv, "r", &pid);
 	if (!p)
 	{
-		debug(D_RCPT, "popen failed(%s).  Will not expand aliases", strerror(errno));
+			debug(D_RCPT, "popenv failed(%s).  Will not expand aliases", strerror(errno));
 			assassin->expandedrcpt.push_back(envrcpt[0]);
 	} else
 	{
@@ -1258,16 +1244,9 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 				assassin->expandedrcpt.push_back(p+7);
 		}
 	}
-	pclose(p); p = NULL;
+			fclose(p); p = NULL;
+			waitpid(pid, NULL, 0);
 		}
-#if defined(__FreeBSD__)
-	rv = pthread_mutex_unlock(&popen_mutex);
-	if (rv)
-	{
-		debug(D_ALWAYS, "Could not unlock popen mutex: %s", strerror(rv));
-		abort();
-	}		
-#endif
 	} else
 	{
 		assassin->expandedrcpt.push_back(envrcpt[0]);
@@ -2965,6 +2944,73 @@ void warnmacro(char *macro, char *scope)
 	debug(D_ALWAYS, "Could not retrieve sendmail macro \"%s\"!.  Please add it to confMILTER_MACROS_%s for better spamassassin results",
 		macro, scope);
 	warnedmacro = true;
+}
+
+/*
+   untrusted-argument-safe popen function - only supports "r" and "w" modes
+   for simplicity, and always reads stdout and stderr in "r" mode.  Call
+   fclose to close the FILE, and waitpid to reap the child process (pid).
+*/
+FILE *popenv(char *const argv[], const char *type, pid_t *pid)
+{
+	FILE *iop;
+	int pdes[2];
+	int save_errno;
+
+	if ((*type != 'r' && *type != 'w') || type[1])
+	{
+		errno = EINVAL;
+		return (NULL);
+	}
+	if (pipe(pdes) < 0)
+		return (NULL);
+	switch (*pid = fork()) {
+	
+	case -1:			/* Error. */
+		save_errno = errno;
+		(void)close(pdes[0]);
+		(void)close(pdes[1]);
+		errno = save_errno;
+		return (NULL);
+		/* NOTREACHED */
+	case 0:				/* Child. */
+		if (*type == 'r') {
+			/*
+			 * The dup2() to STDIN_FILENO is repeated to avoid
+			 * writing to pdes[1], which might corrupt the
+			 * parent's copy.  This isn't good enough in
+			 * general, since the exit() is no return, so
+			 * the compiler is free to corrupt all the local
+			 * variables.
+			 */
+			(void)close(pdes[0]);
+			(void)dup2(pdes[1], STDOUT_FILENO);
+			(void)dup2(pdes[1], STDERR_FILENO);
+			if (pdes[1] != STDOUT_FILENO && pdes[1] != STDERR_FILENO) {
+				(void)close(pdes[1]);
+			} 
+		} else {
+			if (pdes[0] != STDIN_FILENO) {
+				(void)dup2(pdes[0], STDIN_FILENO);
+				(void)close(pdes[0]);
+			}
+			(void)close(pdes[1]);
+		}
+		execv(argv[0], argv);
+		exit(127);
+		/* NOTREACHED */
+	}
+
+	/* Parent; assume fdopen can't fail. */
+	if (*type == 'r') {
+		iop = fdopen(pdes[0], type);
+		(void)close(pdes[1]);
+	} else {
+		iop = fdopen(pdes[1], type);
+		(void)close(pdes[0]);
+	}
+
+	return (iop);
 }
 
 // }}}
