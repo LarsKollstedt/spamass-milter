@@ -1,3 +1,63 @@
+2011-02-14 15:56  Dan Nelson <dnelson@allantgroup.com>
+
+	* Makefile.am:
+
+	upload sigs too
+
+2011-02-14 15:50  Dan Nelson <dnelson@allantgroup.com>
+
+	* spamass-milter.cpp:
+
+	revert 1.93 committed in error
+
+2011-02-14 15:50  Dan Nelson <dnelson@allantgroup.com>
+
+	* spamass-milter.h:
+
+	revert 1.25 committed in error
+
+2011-02-14 15:48  Dan Nelson <dnelson@allantgroup.com>
+
+	* ChangeLog:
+
+	revert 1.6 committed in error
+
+2011-02-14 15:46  Dan Nelson <dnelson@allantgroup.com>
+
+	* ChangeLog, Makefile.am, spamass-milter.cpp, spamass-milter.h:
+
+	savannah disabled ftp uploads, at some point, so try rsync again
+
+2011-02-14 15:31  Dan Nelson <dnelson@allantgroup.com>
+
+	* NEWS, configure.in:
+
+	0.3.2
+
+2011-02-11 00:01  Dan Nelson <dnelson@allantgroup.com>
+
+	* spamass-milter.cpp, spamass-milter.h:
+
+
+	Replace all instances of popen() with a custom function that takes an argv
+	instead of a single string, to avoid a security hole when untrusted user
+	input is used as part of the command.
+
+2006-07-24 14:59  Dan Nelson <dnelson@allantgroup.com>
+
+	* spamass-milter.cpp:
+
+	Add missing ")" after envelope-from and add missing ";" before date in
+	generated Received: header.
+
+	http://savannah.nongnu.org/bugs/?func=detailitem&item_id=17178
+
+2006-04-19 10:40  Dan Nelson <dnelson@allantgroup.com>
+
+	* README:
+
+	add a line for confMILTER_MACROS_ENVRCPT
+
 2006-04-05 10:59  Dan Nelson <dnelson@allantgroup.com>
 
 	* NEWS, configure.in:
