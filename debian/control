@@ -2,12 +2,10 @@ Source: spamass-milter
 Section: mail
 Priority: extra
 Standards-Version: 3.8.0
-Build-Depends: libmilter-dev, debhelper (>= 4), groff-base
+Build-Depends: libmilter-dev, debhelper (>= 7), groff-base
 Maintainer: Don Armstrong <don@debian.org>
 
 Package: spamass-milter
-Section: mail
-Priority: extra
 Architecture: any
 Depends: ${shlibs:Depends}, spamc, adduser
 Recommends: spamassassin, sendmail|postfix
