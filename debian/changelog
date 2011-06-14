@@ -1,3 +1,9 @@
+spamass-milter (0.3.2-1) UNRELEASED; urgency=low
+
+  * New upstream release
+
+ -- Don Armstrong <don@debian.org>  Mon, 13 Jun 2011 17:00:00 -0700
+
 spamass-milter (0.3.1-10) unstable; urgency=low
 
   * Fix zombies which were happening with -x. (closes: #575019)

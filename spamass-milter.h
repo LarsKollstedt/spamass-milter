@@ -1,6 +1,6 @@
 //-*-c++-*-
 //
-//  $Id: spamass-milter.h,v 1.23 2005/04/07 02:04:24 dnelson Exp $
+//  $Id: spamass-milter.h,v 1.26 2011/02/14 21:50:06 dnelson Exp $
 //
 //  Main include file for SpamAss-Milter
 //
