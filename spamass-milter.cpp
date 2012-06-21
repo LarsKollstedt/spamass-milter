@@ -226,10 +226,6 @@ main(int argc, char* argv[])
                 debug(D_MISC, "Parsing ignore list");
                 parse_networklist(optarg, &ignorenets);
                 break;
-			case 'I':
-				debug(D_MISC, "Ignore authenticated senders");
-				ignore_authenticated_senders = true;
-				break;
             case 'm':
                 dontmodifyspam = true;
                 smfilter.xxfi_flags &= ~SMFIF_CHGBODY;
@@ -431,7 +427,7 @@ main(int argc, char* argv[])
 // }}}
 
 /* Update a header if SA changes it, or add it if it is new. */
-void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_setter setter, const char *header )
+void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_setter setter, char *header )
 {
 	string::size_type eoh1 = assassin->d().find("\n\n");
 	string::size_type eoh2 = assassin->d().find("\n\r\n");
@@ -454,7 +450,6 @@ void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_
 		{
 			/* change if old one was present, append if non-null */
 			char* cstr = const_cast<char*>(newstring.c_str());
-			char* hstr = const_cast<char*>(header);
 			if (oldsize > 0)
 			{
 				debug(D_UORI, "u_or_i: changing");
@@ -833,22 +828,6 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
     return SMFIS_TEMPFAIL;
   }
   /* debug(D_ALWAYS, "ZZZ got private context %p", sctx); */
-
-  if (ignore_authenticated_senders)
-  {
-    char *auth_authen;
-
-    auth_authen = smfi_getsymval(ctx, "{auth_authen}");
-    debug(D_MISC, "auth_authen=%s", auth_authen ?: "<unauthenticated>");
-
-    if (auth_authen)
-    {
-      debug(D_MISC, "sender authenticated (%s) - accepting message",
-	    auth_authen);
-      debug(D_FUNC, "mlfi_envfrom: exit ignore");
-      return SMFIS_ACCEPT;
-    }
-  }
 
   debug(D_FUNC, "mlfi_envfrom: enter");
   try {
