@@ -14,7 +14,6 @@
 .Op Fl e Ar defaultdomain
 .Op Fl f
 .Op Fl i Ar networks
-.Op Fl I
 .Op Fl m
 .Op Fl M
 .Op Fl P Ar pidfile
@@ -120,8 +119,6 @@ Multiple
 flags will append to the list.
 For example, if you list all your internal networks, no outgoing emails
 will be filtered.
-.It Fl I
-Ignores messages if the sender has authenticated via SMTP AUTH.
 .It Fl m
 Disables modification of the 
 .Ql Subject: 

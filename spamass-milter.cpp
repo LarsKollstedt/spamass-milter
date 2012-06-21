@@ -169,7 +169,6 @@ bool flag_bucket_only = false;
 char *spambucket;
 bool flag_full_email = false;		/* pass full email address to spamc */
 bool flag_expand = false;	/* alias/virtusertable expansion */
-bool ignore_authenticated_senders = false;
 bool warnedmacro = false;	/* have we logged that we couldn't fetch a macro? */
 
 // {{{ main()
@@ -178,7 +177,7 @@ int
 main(int argc, char* argv[])
 {
    int c, err = 0;
-   const char *args = "fd:mMp:P:r:u:D:i:Ib:B:e:x";
+   const char *args = "fd:mMp:P:r:u:D:i:b:B:e:x";
    char *sock = NULL;
    bool dofork = false;
    char *pidfilename = NULL;
@@ -209,10 +208,6 @@ main(int argc, char* argv[])
 			case 'i':
 				debug(D_MISC, "Parsing ignore list");
 				parse_networklist(optarg, &ignorenets);
-				break;
-			case 'I':
-				debug(D_MISC, "Ignore authenticated senders");
-				ignore_authenticated_senders = true;
 				break;
 			case 'm':
 				dontmodifyspam = true;
@@ -281,7 +276,7 @@ main(int argc, char* argv[])
       cout << PACKAGE_NAME << " - Version " << PACKAGE_VERSION << endl;
       cout << "SpamAssassin Sendmail Milter Plugin" << endl;
       cout << "Usage: spamass-milter -p socket [-b|-B bucket] [-d xx[,yy...]] [-D host]" << endl;
-      cout << "                      [-e defaultdomain] [-f] [-i networks] [-I] [-m] [-M]" << endl;
+      cout << "                      [-e defaultdomain] [-f] [-i networks] [-m] [-M]" << endl;
       cout << "                      [-P pidfile] [-r nn] [-u defaultuser] [-x]" << endl;
       cout << "                      [-- spamc args ]" << endl;
       cout << "   -p socket: path to create socket" << endl;
@@ -295,7 +290,6 @@ main(int argc, char* argv[])
       cout << "   -f: fork into background" << endl;
       cout << "   -i: skip (ignore) checks from these IPs or netblocks" << endl;
       cout << "          example: -i 192.168.12.5,10.0.0.0/8,172.16.0.0/255.255.0.0" << endl;
-      cout << "   -I: skip (ignore) checks if sender is authenticated" << endl;
       cout << "   -m: don't modify body, Content-type: or Subject:" << endl;
       cout << "   -M: don't modify the message at all" << endl;
       cout << "   -P pidfile: Put processid in pidfile" << endl;
@@ -363,7 +357,7 @@ main(int argc, char* argv[])
 // }}}
 
 /* Update a header if SA changes it, or add it if it is new. */
-void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_setter setter, const char *header )
+void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_setter setter, char *header )
 {
 	string::size_type eoh1 = assassin->d().find("\n\n");
 	string::size_type eoh2 = assassin->d().find("\n\r\n");
@@ -386,16 +380,15 @@ void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_
 		{
 			/* change if old one was present, append if non-null */
 			char* cstr = const_cast<char*>(newstring.c_str());
-			char* hstr = const_cast<char*>(header);
 			if (oldsize > 0)
 			{
 				debug(D_UORI, "u_or_i: changing");
-				smfi_chgheader(ctx, hstr, 1, newstring.size() > 0 ? 
+				smfi_chgheader(ctx, header, 1, newstring.size() > 0 ? 
 					cstr : NULL );
 			} else if (newstring.size() > 0)
 			{
 				debug(D_UORI, "u_or_i: inserting");
-				smfi_addheader(ctx, hstr, cstr);
+				smfi_addheader(ctx, header, cstr);
 			}
 		} else
 		{
@@ -473,7 +466,7 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
 			popen_argv[2] = NULL;
 			
 			debug(D_COPY, "calling %s %s", SENDMAIL, spambucket);
-			p = popenv(popen_argv, "w",&pid);
+			p = popenv(popen_argv, "w", &pid);
 			if (!p)
 			{
 				debug(D_COPY, "popenv failed(%s).  Will not send a copy to spambucket", strerror(errno));
@@ -482,7 +475,7 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
 				// Send message provided by SpamAssassin
 				fwrite(assassin->d().c_str(), assassin->d().size(), 1, p);
 				fclose(p); p = NULL;
-				waitpid(pid,0,0);
+				waitpid(pid, NULL, 0);
 			}
 		}
 		return SMFIS_REJECT;
@@ -753,22 +746,6 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
   }
   /* debug(D_ALWAYS, "ZZZ got private context %p", sctx); */
 
-  if (ignore_authenticated_senders)
-  {
-    char *auth_authen;
-
-    auth_authen = smfi_getsymval(ctx, "{auth_authen}");
-    debug(D_MISC, "auth_authen=%s", auth_authen ?: "<unauthenticated>");
-
-    if (auth_authen)
-    {
-      debug(D_MISC, "sender authenticated (%s) - accepting message",
-	    auth_authen);
-      debug(D_FUNC, "mlfi_envfrom: exit ignore");
-      return SMFIS_ACCEPT;
-    }
-  }
-
   debug(D_FUNC, "mlfi_envfrom: enter");
   try {
     // launch new SpamAssassin
@@ -864,8 +841,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 				}
 			}
 			fclose(p); p = NULL;
-			waitpid(pid,0,0);
-
+			waitpid(pid, NULL, 0);
 		}
 	} else
 	{
@@ -969,7 +945,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 
 		assassin->output((string)
 			"Received: from "+macro_s+" ("+macro__+")\r\n\t"+
-			"by "+macro_j+" ("+macro_v+"/"+macro_Z+") with "+macro_r+" id "+macro_i+"\r\n\t"+
+			"by "+macro_j+"("+macro_v+"/"+macro_Z+") with "+macro_r+" id "+macro_i+";\r\n\t"+
 			macro_b+"\r\n\t"+
 			"(envelope-from "+assassin->from()+")\r\n");
 
@@ -2127,7 +2103,7 @@ void warnmacro(char *macro, char *scope)
 /*
    untrusted-argument-safe popen function - only supports "r" and "w" modes
    for simplicity, and always reads stdout and stderr in "r" mode.  Call
-   fclose to close the FILE.
+   fclose to close the FILE, and waitpid to reap the child process (pid).
 */
 FILE *popenv(char *const argv[], const char *type, pid_t *pid)
 {
@@ -2142,9 +2118,7 @@ FILE *popenv(char *const argv[], const char *type, pid_t *pid)
 	}
 	if (pipe(pdes) < 0)
 		return (NULL);
-	
-	*pid = fork();
-	switch (*pid) {
+	switch (*pid = fork()) {
 	
 	case -1:			/* Error. */
 		save_errno = errno;
