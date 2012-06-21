@@ -1,3 +1,7 @@
+Description: Fix spacing in the received header
+Author: Marco d'Itri <md@linux.it>
+Bug: #510665
+Forwarded: no
 Index: spamass-milter/spamass-milter.cpp
 ===================================================================
 --- spamass-milter.orig/spamass-milter.cpp	2012-06-21 13:02:06.000000000 -0700

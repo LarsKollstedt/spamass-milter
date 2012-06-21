@@ -1,3 +1,8 @@
+Description: Add support for ipv6
+Origin: http://wilmer.gaast.net/blog/archives/61-spamass-milter-and-IPv6.html
+Bug: #569483
+Author: Wilmer van der Gaast <wilmer@gaast.net>
+Forwarded: no
 Index: spamass-milter/spamass-milter.cpp
 ===================================================================
 --- spamass-milter.orig/spamass-milter.cpp	2012-06-21 13:03:25.000000000 -0700

@@ -1,3 +1,6 @@
+Description: Fix a const cast in the header
+Author: Don Armstrong <don@donarmstrong.com>
+Forwarded: no
 Index: spamass-milter/spamass-milter.cpp
 ===================================================================
 --- spamass-milter.orig/spamass-milter.cpp	2012-06-21 13:02:08.000000000 -0700
