@@ -3,7 +3,7 @@
 DH_VERBOSE = 1
 
 %: 
-	dh $@ --parallel
+	dh $@ --parallel --with autotools_dev
 
 override_dh_auto_configure:
 	 SPAMC="/usr/bin/spamc" SENDMAIL="/usr/sbin/sendmail" \
@@ -11,7 +11,7 @@ override_dh_auto_configure:
 
 override_dh_auto_clean:
 	dh_auto_clean;
-	rm -f config.log config.status config.h Makefile
+	rm -f config.log config.status config.h Makefile stamp-h1
 
 # PREFIX=$(shell pwd)/debian/spamass-milter/usr
 # 
