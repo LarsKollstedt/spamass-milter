@@ -183,7 +183,6 @@ main(int argc, char* argv[])
    bool dofork = false;
    char *pidfilename = NULL;
    FILE *pidfile = NULL;
-   struct sigaction children_sigaction;
 
 #ifdef HAVE_VERBOSE_TERMINATE_HANDLER
 	std::set_terminate (__gnu_cxx::__verbose_terminate_handler);
@@ -364,7 +363,7 @@ main(int argc, char* argv[])
 // }}}
 
 /* Update a header if SA changes it, or add it if it is new. */
-void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_setter setter, char *header )
+void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_setter setter, const char *header )
 {
 	string::size_type eoh1 = assassin->d().find("\n\n");
 	string::size_type eoh2 = assassin->d().find("\n\r\n");
@@ -387,15 +386,16 @@ void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_
 		{
 			/* change if old one was present, append if non-null */
 			char* cstr = const_cast<char*>(newstring.c_str());
+			char* hstr = const_cast<char*>(header);
 			if (oldsize > 0)
 			{
 				debug(D_UORI, "u_or_i: changing");
-				smfi_chgheader(ctx, header, 1, newstring.size() > 0 ? 
+				smfi_chgheader(ctx, hstr, 1, newstring.size() > 0 ? 
 					cstr : NULL );
 			} else if (newstring.size() > 0)
 			{
 				debug(D_UORI, "u_or_i: inserting");
-				smfi_addheader(ctx, header, cstr);
+				smfi_addheader(ctx, hstr, cstr);
 			}
 		} else
 		{
