@@ -1,3 +1,6 @@
+Description: Add ignore authenticated senders option
+From: Paul Traina <reportbug@st04.pst.org>
+Bug: #301755
 Index: spamass-milter/spamass-milter.1.in
 ===================================================================
 --- spamass-milter.orig/spamass-milter.1.in	2012-06-21 12:53:44.000000000 -0700
