@@ -192,7 +192,6 @@ main(int argc, char* argv[])
    bool dofork = false;
    char *pidfilename = NULL;
    FILE *pidfile = NULL;
-   struct sigaction children_sigaction;
 
 #ifdef HAVE_VERBOSE_TERMINATE_HANDLER
 	std::set_terminate (__gnu_cxx::__verbose_terminate_handler);
@@ -455,6 +454,7 @@ void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_
 		{
 			/* change if old one was present, append if non-null */
 			char* cstr = const_cast<char*>(newstring.c_str());
+			char* hstr = const_cast<char*>(header);
 			if (oldsize > 0)
 			{
 				debug(D_UORI, "u_or_i: changing");
