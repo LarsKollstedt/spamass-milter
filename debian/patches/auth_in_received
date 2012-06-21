@@ -1,3 +1,8 @@
+Description: Include Auth information in the received line
+Origin: https://www.linuxhacker.at/opensource-projects/spamass-milter
+Bug: #627989
+Author: Herbert Straub, Knut Arne Bjørndal <knut.arne.bjorndal@easyconnect.no>
+Forwarded: no
 Index: spamass-milter/spamass-milter.cpp
 ===================================================================
 --- spamass-milter.orig/spamass-milter.cpp	2012-06-21 13:03:42.000000000 -0700
