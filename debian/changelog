@@ -1,8 +1,13 @@
 spamass-milter (0.3.2-1) UNRELEASED; urgency=low
 
   * New upstream release
-  * No longer create home directory for spamass-milter; remove on purge if it exists (closes: #668717)
-
+  * No longer create home directory for spamass-milter; remove on purge if
+    it exists (closes: #668717)
+  * Use autotools-dev to update config.sub/config.guess (closes: #539791)
+  * Include support for ipv6 (Thanks to Wilmer van der Gaast) (closes: #569483)
+  * Add SMTP auth information to received header (Thanks to Knut Arne
+    Bjørndal) (closes: #627989)
+  
  -- Don Armstrong <don@debian.org>  Mon, 13 Jun 2011 17:00:00 -0700
 
 spamass-milter (0.3.1-10) unstable; urgency=low
