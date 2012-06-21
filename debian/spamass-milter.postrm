@@ -1,0 +1,17 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    purge)
+	# remove /var/lib/spamass-milter if it exists
+	rmdir --ignore-fail-on-non-empty /var/lib/spamass-milter
+	;;
+    *) 
+	# do nothing
+	;;
+esac
+
+###DEBHELPER###
+
+exit 0;
