@@ -11,7 +11,7 @@ override_dh_auto_configure:
 
 override_dh_auto_clean:
 	dh_auto_clean;
-	rm -f config.log config.status config.h Makefile stamp-h1
+	rm -f config.log config.status config.h Makefile stamp-h1 spamass-milter.1
 
 # PREFIX=$(shell pwd)/debian/spamass-milter/usr
 # 
