@@ -1,4 +1,4 @@
-spamass-milter (0.3.2-1) UNRELEASED; urgency=low
+spamass-milter (0.3.2-1) unstable; urgency=low
 
   * New upstream release
   * No longer create home directory for spamass-milter; remove on purge if
