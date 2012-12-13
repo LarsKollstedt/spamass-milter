@@ -1,3 +1,10 @@
+spamass-milter (0.3.2-2) unstable; urgency=low
+
+  * Make it more clear that OPTIONS can only be set once in the
+    configuration file (Thanks to Matt Jamison) (closes: #695809).
+
+ -- Don Armstrong <don@donarmstrong.com>  Wed, 12 Dec 2012 17:05:17 -0800
+
 spamass-milter (0.3.2-1) unstable; urgency=low
 
   * New upstream release
