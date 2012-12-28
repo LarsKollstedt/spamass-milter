@@ -4,6 +4,8 @@ spamass-milter (0.3.2-2) unstable; urgency=low
     configuration file (Thanks to Matt Jamison) (closes: #695809).
   * Document that the i macro should be given for postfix. (closes:
     #696856)
+  * Create a spamass-milter group and a /var/lib/spamass-milter directory;
+    make the primary group id spamass-milter. (Closes: #696861)
 
  -- Don Armstrong <don@donarmstrong.com>  Wed, 12 Dec 2012 17:05:17 -0800
 
