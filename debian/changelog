@@ -2,6 +2,8 @@ spamass-milter (0.3.2-2) unstable; urgency=low
 
   * Make it more clear that OPTIONS can only be set once in the
     configuration file (Thanks to Matt Jamison) (closes: #695809).
+  * Document that the i macro should be given for postfix. (closes:
+    #696856)
 
  -- Don Armstrong <don@donarmstrong.com>  Wed, 12 Dec 2012 17:05:17 -0800
 
