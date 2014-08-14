@@ -1269,7 +1269,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		popen_argv[2] = envrcpt[0];
 		popen_argv[3] = NULL;
 
-		debug(D_RCPT, "calling %s -bv %s", SENDMAIL, envrcpt[0]);
+		debug(D_RCPT, "calling %s -bv %s", path_to_sendmail, envrcpt[0]);
 
 		p = popenv(popen_argv, "r", &pid);
 	if (!p)
