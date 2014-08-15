@@ -1284,7 +1284,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		char date[32];
 
 		/* RFC 822 date. */
-				macro_b = smfi_getsymval(ctx, "b");
+		macro_b = smfi_getsymval(ctx, const_cast<char *>("b"));
 		if (!macro_b)                                  
 		{
 			time_t tval;
@@ -1295,7 +1295,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* queue ID */
-		macro_i = smfi_getsymval(ctx, "i");
+		macro_i = smfi_getsymval(ctx, const_cast<char *>("i"));
 		if (!macro_i)
 		{
 			macro_i = "unknown";
@@ -1303,7 +1303,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* FQDN of this site */
-		macro_j = smfi_getsymval(ctx, "j");
+		macro_j = smfi_getsymval(ctx, const_cast<char *>("j"));
 		if (!macro_j)
 		{
 			macro_j = "localhost";
@@ -1311,7 +1311,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* Protocol used to receive the message */
-		macro_r = smfi_getsymval(ctx, "r");
+		macro_r = smfi_getsymval(ctx, const_cast<char *>("r"));
 		if (!macro_r)
 		{
 			macro_r = "SMTP";
@@ -1323,14 +1323,14 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 				   fixed.  Until that day, use the value remembered by
 				   mlfi_helo()
 				*/
-				macro_s = smfi_getsymval(ctx, "s");
+		macro_s = smfi_getsymval(ctx, const_cast<char *>("s"));
 				if (!macro_s)
 					macro_s = sctx->helo;
 				if (!macro_s)
 					macro_s = "nohelo";
 
 		/* Sendmail binary version */
-		macro_v = smfi_getsymval(ctx, "v");
+		macro_v = smfi_getsymval(ctx, const_cast<char *>("v"));
 		if (!macro_v)
 		{
 			macro_v = "8.13.0";
@@ -1338,7 +1338,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* Sendmail .cf version */
-		macro_Z = smfi_getsymval(ctx, "Z");
+		macro_Z = smfi_getsymval(ctx, const_cast<char *>("Z"));
 		if (!macro_Z)
 		{
 			macro_Z = "8.13.0";
@@ -1346,7 +1346,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* Validated sending site's address */
-		macro__ = smfi_getsymval(ctx, "_");
+		macro__ = smfi_getsymval(ctx, const_cast<char *>("_"));
 		if (!macro__)
 		{
 			macro__ = "unknown";
