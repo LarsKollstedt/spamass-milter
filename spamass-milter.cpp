@@ -1,6 +1,6 @@
 // 
 //
-//  $Id: spamass-milter.cpp,v 1.94 2011/02/14 21:50:53 dnelson Exp $
+//  $Id: spamass-milter.cpp,v 1.100 2014/08/15 02:46:50 kovert Exp $
 //
 //  SpamAss-Milter 
 //    - a rather trivial SpamAssassin Sendmail Milter plugin
@@ -88,6 +88,7 @@
 #include "subst_poll.h"
 #endif
 #include <errno.h>
+#include <netdb.h>
 
 // C++ includes
 #include <cstdio>
@@ -127,11 +128,13 @@ int daemon(int nochdir, int noclose);
 
 // }}} 
 
-static const char Id[] = "$Id: spamass-milter.cpp,v 1.94 2011/02/14 21:50:53 dnelson Exp $";
+static const char Id[] = "$Id: spamass-milter.cpp,v 1.100 2014/08/15 02:46:50 kovert Exp $";
+
+static char FilterName[] = "SpamAssassin";
 
 struct smfiDesc smfilter =
   {
-    "SpamAssassin", // filter name
+    FilterName, // filter name
     SMFI_VERSION,   // version code -- leave untouched
     SMFIF_ADDHDRS|SMFIF_CHGHDRS|SMFIF_CHGBODY,  // flags
     mlfi_connect, // info filter callback
@@ -160,7 +163,10 @@ bool dontmodify = false;        // Don't add SA headers, ever.
 bool flag_sniffuser = false;
 char *defaultuser;				/* Username to send to spamc if there are multiple recipients */
 char *defaultdomain;			/* Domain to append if incoming address has none */
+char *path_to_sendmail = (char *) SENDMAIL;
 char *spamdhost;
+char *rejecttext = NULL;				/* If we reject a mail, then use this text */
+char *rejectcode = NULL;				/* If we reject a mail, then use code */
 struct networklist ignorenets;
 int spamc_argc;
 char **spamc_argv;
@@ -170,6 +176,7 @@ char *spambucket;
 bool flag_full_email = false;		/* pass full email address to spamc */
 bool flag_expand = false;	/* alias/virtusertable expansion */
 bool warnedmacro = false;	/* have we logged that we couldn't fetch a macro? */
+bool auth = false;		/* don't scan authenticated users */
 
 // {{{ main()
 
@@ -177,7 +184,7 @@ int
 main(int argc, char* argv[])
 {
    int c, err = 0;
-   const char *args = "fd:mMp:P:r:u:D:i:b:B:e:x";
+   const char *args = "afd:mMp:P:r:u:D:i:b:B:e:xS:R:C:";
    char *sock = NULL;
    bool dofork = false;
    char *pidfilename = NULL;
@@ -189,9 +196,13 @@ main(int argc, char* argv[])
 
    openlog("spamass-milter", LOG_PID, LOG_MAIL);
 
-	/* Process command line options */
-	while ((c = getopt(argc, argv, args)) != -1) {
-		switch (c) {
+
+    /* Process command line options */
+    while ((c = getopt(argc, argv, args)) != -1) {
+        switch (c) {
+            case 'a':
+                auth = true;
+                break;
 			case 'f':
 				dofork = true;
 				break;
@@ -228,6 +239,15 @@ main(int argc, char* argv[])
 				flag_reject = true;
 				reject_score = atoi(optarg);
 				break;
+            case 'S':
+                path_to_sendmail = strdup(optarg);
+                break;
+            case 'C':
+                rejectcode = strdup (optarg);
+                break;
+            case 'R':
+                rejecttext = strdup (optarg);
+                break;
 			case 'u':
 				flag_sniffuser = true;
 				defaultuser = strdup(optarg);
@@ -277,12 +297,14 @@ main(int argc, char* argv[])
       cout << "SpamAssassin Sendmail Milter Plugin" << endl;
       cout << "Usage: spamass-milter -p socket [-b|-B bucket] [-d xx[,yy...]] [-D host]" << endl;
       cout << "                      [-e defaultdomain] [-f] [-i networks] [-m] [-M]" << endl;
-      cout << "                      [-P pidfile] [-r nn] [-u defaultuser] [-x]" << endl;
+      cout << "                      [-P pidfile] [-r nn] [-u defaultuser] [-x] [-a]" << endl;
+      cout << "                      [-C rejectcode] [ -R rejectmsg ]" << endl;
       cout << "                      [-- spamc args ]" << endl;
       cout << "   -p socket: path to create socket" << endl;
       cout << "   -b bucket: redirect spam to this mail address.  The orignal" << endl;
       cout << "          recipient(s) will not receive anything." << endl;
       cout << "   -B bucket: add this mail address as a BCC recipient of spam." << endl;
+      cout << "   -C RejectCode: using this Reject Code." << endl;
       cout << "   -d xx[,yy ...]: set debug flags.  Logs to syslog" << endl;
       cout << "   -D host: connect to spamd at remote host (deprecated)" << endl;
       cout << "   -e defaultdomain: pass full email address to spamc instead of just\n"
@@ -295,13 +317,23 @@ main(int argc, char* argv[])
       cout << "   -P pidfile: Put processid in pidfile" << endl;
       cout << "   -r nn: reject messages with a score >= nn with an SMTP error.\n"
               "          use -1 to reject any messages tagged by SA." << endl;
+      cout << "   -R RejectText: using this Reject Text." << endl;
       cout << "   -u defaultuser: pass the recipient's username to spamc.\n"
               "          Uses 'defaultuser' if there are multiple recipients." << endl;
       cout << "   -x: pass email address through alias and virtusertable expansion." << endl;
+      cout << "   -a: don't scan messages over an authenticated connection." << endl;
       cout << "   -- spamc args: pass the remaining flags to spamc." << endl;
               
       exit(EX_USAGE);
    }
+
+    /* Set standard reject text */
+    if (rejecttext == NULL) {
+        rejecttext = strdup ("Blocked by SpamAssassin");
+    }
+    if (rejectcode == NULL) {
+        rejectcode = strdup ("5.7.1");
+    }
 
 	if (pidfilename)
 	{
@@ -357,7 +389,7 @@ main(int argc, char* argv[])
 // }}}
 
 /* Update a header if SA changes it, or add it if it is new. */
-void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_setter setter, char *header )
+void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_setter setter, const char *header )
 {
 	string::size_type eoh1 = assassin->d().find("\n\n");
 	string::size_type eoh2 = assassin->d().find("\n\r\n");
@@ -383,12 +415,12 @@ void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_
 			if (oldsize > 0)
 			{
 				debug(D_UORI, "u_or_i: changing");
-				smfi_chgheader(ctx, header, 1, newstring.size() > 0 ? 
+				smfi_chgheader(ctx, const_cast<char*>(header), 1, newstring.size() > 0 ? 
 					cstr : NULL );
 			} else if (newstring.size() > 0)
 			{
 				debug(D_UORI, "u_or_i: inserting");
-				smfi_addheader(ctx, header, cstr);
+				smfi_addheader(ctx, const_cast<char*>(header), cstr);
 			}
 		} else
 		{
@@ -448,7 +480,7 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
 	if (do_reject)
 	{
 		debug(D_MISC, "Rejecting");
-		smfi_setreply(ctx, "550", "5.7.1", "Blocked by SpamAssassin");
+		smfi_setreply(ctx, const_cast<char*>("550"), rejectcode, rejecttext);
 
 
 		if (flag_bucket)
@@ -461,11 +493,11 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
 			FILE *p;
 			pid_t pid;
 
-			popen_argv[0] = SENDMAIL;
+			popen_argv[0] = path_to_sendmail;
 			popen_argv[1] = spambucket;
 			popen_argv[2] = NULL;
 			
-			debug(D_COPY, "calling %s %s", SENDMAIL, spambucket);
+			debug(D_COPY, "calling %s %s", path_to_sendmail, spambucket);
 			p = popenv(popen_argv, "w", &pid);
 			if (!p)
 			{
@@ -494,7 +526,7 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
                 // time. Note, this may generate multiple X-Spam-Orig-To
                 // headers, but that's okay.
                 while( !assassin->recipients.empty()) {
-                  if ( smfi_addheader( ctx, "X-Spam-Orig-To", (char *)assassin->recipients.front().c_str()) != MI_SUCCESS ) {
+                  if ( smfi_addheader( ctx, const_cast<char *>("X-Spam-Orig-To"), (char *)assassin->recipients.front().c_str()) != MI_SUCCESS ) {
                         throw string( "Failed to save recipient" );
                   }
 
@@ -678,12 +710,19 @@ mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	sctx = (struct context *)malloc(sizeof(*sctx));
 	if (!hostaddr)
 	{
+		static struct sockaddr_in localhost;
+		
 		/* not a socket; probably a local user calling sendmail directly */
 		/* set to 127.0.0.1 */
-		sctx->connect_ip.s_addr = htonl(INADDR_LOOPBACK);
+		strcpy(sctx->connect_ip, "127.0.0.1");
+		localhost.sin_family = AF_INET;
+		localhost.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+		hostaddr = (struct sockaddr*) &localhost;
 	} else
 	{
-		sctx->connect_ip = ((struct sockaddr_in *) hostaddr)->sin_addr;
+		getnameinfo(hostaddr, sizeof(struct sockaddr_in6),
+		            sctx->connect_ip, 63, NULL, 0, NI_NUMERICHOST);
+		debug(D_FUNC, "Remote address: %s", sctx->connect_ip);
 	}
 	sctx->assassin = NULL;
 	sctx->helo = NULL;
@@ -697,10 +736,12 @@ mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	}
 	/* debug(D_ALWAYS, "ZZZ set private context to %p", sctx); */
 
-	if (ip_in_networklist(sctx->connect_ip, &ignorenets))
+	//debug(D_FUNC, "sctx->connect_ip: `%d'", sctx->connect_ip.sin_family);
+
+	if (ip_in_networklist(hostaddr, &ignorenets))
 	{
 		debug(D_NET, "%s is in our ignore list - accepting message",
-		    inet_ntoa(sctx->connect_ip));
+		      sctx->connect_ip);
 		debug(D_FUNC, "mlfi_connect: exit ignore");
 		return SMFIS_ACCEPT;
 	}
@@ -737,7 +778,7 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
 {
   SpamAssassin* assassin;
   struct context *sctx = (struct context *)smfi_getpriv(ctx);
-  char *queueid;
+  const char *queueid;
 
   if (sctx == NULL)
   {
@@ -745,6 +786,16 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
     return SMFIS_TEMPFAIL;
   }
   /* debug(D_ALWAYS, "ZZZ got private context %p", sctx); */
+
+  if (auth) {
+    const char *auth_type = smfi_getsymval(ctx,  
+        const_cast<char *>("{auth_type}"));
+
+    if (auth_type) {
+      debug(D_MISC, "auth_type=%s", auth_type);
+      return SMFIS_ACCEPT;
+    }
+  }
 
   debug(D_FUNC, "mlfi_envfrom: enter");
   try {
@@ -756,7 +807,7 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
       return SMFIS_TEMPFAIL;
     };
   
-  assassin->set_connectip(string(inet_ntoa(sctx->connect_ip)));
+  assassin->set_connectip(string(sctx->connect_ip));
 
   // Store a pointer to the assassin object in our context struct
   sctx->assassin = assassin;
@@ -764,7 +815,7 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
   // remember the MAIL FROM address
   assassin->set_from(string(envfrom[0]));
   
-  queueid=smfi_getsymval(ctx,"i");
+  queueid=smfi_getsymval(ctx, const_cast<char *>("i"));
   if (!queueid)
   {
     queueid="unknown";
@@ -805,12 +856,12 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		char *popen_argv[4];
 		pid_t pid;
 		
-		popen_argv[0] = SENDMAIL;
-		popen_argv[1] = "-bv";
+		popen_argv[0] = path_to_sendmail;
+		popen_argv[1] = (char *)"-bv";
 		popen_argv[2] = envrcpt[0];
 		popen_argv[3] = NULL;
 
-		debug(D_RCPT, "calling %s -bv %s", SENDMAIL, envrcpt[0]);
+		debug(D_RCPT, "calling %s -bv %s", path_to_sendmail, envrcpt[0]);
 
 		p = popenv(popen_argv, "r", &pid);
 		if (!p)
@@ -871,7 +922,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		char date[32];
 
 		/* RFC 822 date. */
-		macro_b = smfi_getsymval(ctx, "b");
+		macro_b = smfi_getsymval(ctx, const_cast<char *>("b"));
 		if (!macro_b)                                  
 		{
 			time_t tval;
@@ -882,7 +933,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* queue ID */
-		macro_i = smfi_getsymval(ctx, "i");
+		macro_i = smfi_getsymval(ctx, const_cast<char *>("i"));
 		if (!macro_i)
 		{
 			macro_i = "unknown";
@@ -890,7 +941,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* FQDN of this site */
-		macro_j = smfi_getsymval(ctx, "j");
+		macro_j = smfi_getsymval(ctx, const_cast<char *>("j"));
 		if (!macro_j)
 		{
 			macro_j = "localhost";
@@ -898,7 +949,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* Protocol used to receive the message */
-		macro_r = smfi_getsymval(ctx, "r");
+		macro_r = smfi_getsymval(ctx, const_cast<char *>("r"));
 		if (!macro_r)
 		{
 			macro_r = "SMTP";
@@ -910,14 +961,14 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		   fixed.  Until that day, use the value remembered by
 		   mlfi_helo()
 		*/
-		macro_s = smfi_getsymval(ctx, "s");
+		macro_s = smfi_getsymval(ctx, const_cast<char *>("s"));
 		if (!macro_s)
 			macro_s = sctx->helo;
 		if (!macro_s)
 			macro_s = "nohelo";
 
 		/* Sendmail binary version */
-		macro_v = smfi_getsymval(ctx, "v");
+		macro_v = smfi_getsymval(ctx, const_cast<char *>("v"));
 		if (!macro_v)
 		{
 			macro_v = "8.13.0";
@@ -925,7 +976,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* Sendmail .cf version */
-		macro_Z = smfi_getsymval(ctx, "Z");
+		macro_Z = smfi_getsymval(ctx, const_cast<char *>("Z"));
 		if (!macro_Z)
 		{
 			macro_Z = "8.13.0";
@@ -933,7 +984,7 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
 		}
 
 		/* Validated sending site's address */
-		macro__ = smfi_getsymval(ctx, "_");
+		macro__ = smfi_getsymval(ctx, const_cast<char *>("_"));
 		if (!macro__)
 		{
 			macro__ = "unknown";
@@ -1321,10 +1372,10 @@ void SpamAssassin::Connect()
       // XXX arbitrary 100-argument max
       int argc = 0;
       char** argv = (char**) malloc(100*sizeof(char*));
-      argv[argc++] = SPAMC;
+      argv[argc++] = strdup(SPAMC);
       if (flag_sniffuser) 
       {
-        argv[argc++] = "-u";
+        argv[argc++] = strdup("-u");
         if ( expandedrcpt.size() != 1 )
         {
           // More (or less?) than one recipient, so we pass the default
@@ -1349,7 +1400,7 @@ void SpamAssassin::Connect()
       }
       if (spamdhost) 
       {
-        argv[argc++] = "-d";
+        argv[argc++] = strdup("-d");
         argv[argc++] = spamdhost;
       }
       if (spamc_argc)
@@ -2010,16 +2061,15 @@ void parse_networklist(char *string, struct networklist *list)
 	{
 		char *tnet = strsep(&token, "/");
 		char *tmask = token;
-		struct in_addr net, mask;
+		struct in_addr net;
+		struct in6_addr net6;
 
 		if (list->num_nets % 10 == 0)
-			list->nets = (struct net*)realloc(list->nets, sizeof(*list->nets) * (list->num_nets + 10));
+			list->nets = (union net*)realloc(list->nets, sizeof(*list->nets) * (list->num_nets + 10));
 
-		if (!inet_aton(tnet, &net))
+		if (inet_pton(AF_INET, tnet, &net))
 		{
-			fprintf(stderr, "Could not parse \"%s\" as a network\n", tnet);
-			exit(1);
-		}
+			struct in_addr mask;
 
 		if (tmask)
 		{
@@ -2035,7 +2085,7 @@ void parse_networklist(char *string, struct networklist *list)
 					exit(1);
 				}
 				mask.s_addr = htonl(~((1L << (32 - bits)) - 1) & 0xffffffff);
-			} else if (!inet_aton(tmask, &mask))
+				} else if (!inet_pton(AF_INET6, tmask, &mask))
 			{
 				fprintf(stderr, "Could not parse \"%s\" as a netmask\n", tmask);
 				exit(1);
@@ -2050,29 +2100,80 @@ void parse_networklist(char *string, struct networklist *list)
 		}
 
 		net.s_addr = net.s_addr & mask.s_addr;
-		list->nets[list->num_nets].network = net;
-		list->nets[list->num_nets].netmask = mask;
-		list->num_nets++;
+			list->nets[list->num_nets].net4.af = AF_INET;
+			list->nets[list->num_nets].net4.network = net;
+			list->nets[list->num_nets].net4.netmask = mask;
+			list->num_nets++;
+		} else if (inet_pton(AF_INET6, tnet, &net6))
+		{
+			int mask;
+			
+			if (tmask)
+			{
+				if (sscanf(tmask, "%d", &mask) != 1 || mask > 128)
+				{
+					fprintf(stderr,"%s: bad CIDR value", tmask);
+					exit(1);
+				}
+			} else
+				mask = 128;
+			
+			list->nets[list->num_nets].net6.af = AF_INET6;
+			list->nets[list->num_nets].net6.network = net6;
+			list->nets[list->num_nets].net6.netmask = mask;
+			list->num_nets++;
+		} else
+		{
+			fprintf(stderr, "Could not parse \"%s\" as a network\n", tnet);
+			exit(1);
+		}
+
 	}
 	free(string);
 }
 
-int ip_in_networklist(struct in_addr ip, struct networklist *list)
+int ip_in_networklist(struct sockaddr *addr, struct networklist *list)
 {
 	int i;
 
 	if (list->num_nets == 0)
 		return 0;
 		
-	debug(D_NET, "Checking %s against:", inet_ntoa(ip));
+	//debug(D_NET, "Checking %s against:", inet_ntoa(ip));
 	for (i = 0; i < list->num_nets; i++)
 	{
-		debug(D_NET, "%s", inet_ntoa(list->nets[i].network));
-		debug(D_NET, "/%s", inet_ntoa(list->nets[i].netmask));
-		if ((ip.s_addr & list->nets[i].netmask.s_addr) == list->nets[i].network.s_addr)
+		if (list->nets[i].net.af == AF_INET && addr->sa_family == AF_INET)
+		{
+			struct in_addr ip = ((struct sockaddr_in *)addr)->sin_addr;
+			
+			debug(D_NET, "%s", inet_ntoa(list->nets[i].net4.network));
+			debug(D_NET, "/%s", inet_ntoa(list->nets[i].net4.netmask));
+			if ((ip.s_addr & list->nets[i].net4.netmask.s_addr) == list->nets[i].net4.network.s_addr)
         {
         	debug(D_NET, "Hit!");
 			return 1;
+		}
+		} else if (list->nets[i].net.af == AF_INET6 && addr->sa_family == AF_INET6)
+		{
+			u_int8_t *ip = ((struct sockaddr_in6 *)addr)->sin6_addr.s6_addr;
+			int mask, j;
+			
+			mask = list->nets[i].net6.netmask;
+			for (j = 0; j < 16 && mask > 0; j++, mask -= 8)
+			{
+				unsigned char bytemask;
+				
+				bytemask = (mask < 8) ? ~((1L << (8 - mask)) - 1) : 0xff;
+				
+				if ((ip[j] & bytemask) != (list->nets[i].net6.network.s6_addr[j] & bytemask))
+					break;
+			}
+			
+			if (mask <= 0)
+			{
+				debug(D_NET, "Hit!");
+				return 1;
+			}
 		}
 	}
 
@@ -2091,7 +2192,7 @@ char *strlwr(char *str)
 }
 
 /* Log a message about missing milter macros, but only the first time */
-void warnmacro(char *macro, char *scope)
+void warnmacro(const char *macro, const char *scope)
 {
 	if (warnedmacro)
 		return;
