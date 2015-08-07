@@ -4,8 +4,8 @@ Priority: extra
 Standards-Version: 3.9.2
 Build-Depends: libmilter-dev, debhelper (>= 9), groff-base, autotools-dev
 Maintainer: Don Armstrong <don@debian.org>
-Vcs-Svn: svn://svn.donarmstrong.com/deb_pkgs/spamass-milter/trunk
-Vcs-Browser: http://wsvn.donarmstrong.com/deb_pkgs/spamass-milter/trunk
+Vcs-Git: git://git.donarmstrong.com/deb_pkgs/spamass-milter.git
+Vcs-Browser: http://git.donarmstrong.com/deb_pkgs/spamass-milter.git
 
 Package: spamass-milter
 Architecture: any
