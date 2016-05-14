@@ -55,11 +55,11 @@ Forwarded: no
 +			}
 +			rec_header+=(string)")\r\n\t";
 +		}
-+		rec_header+=(string)"by "+macro_j+"("+macro_v+"/"+macro_Z+") with "+
++		rec_header+=(string)"by "+macro_j+" ("+macro_v+"/"+macro_Z+") with "+
 +			macro_r+" id "+macro_i+"\r\n\t"+
  			macro_b+"\r\n\t"+
 -			"(envelope-from "+assassin->from()+")\r\n");
-+			"(envelope-from "+assassin->from()+"\r\n";
++			"(envelope-from "+assassin->from()+");\r\n";
 +
 +		debug(D_SPAMC, "Received header for spamc: %s", rec_header.c_str());
 +		assassin->output(rec_header);

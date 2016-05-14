@@ -3,6 +3,8 @@ spamass-milter (0.4.0-1) unstable; urgency=medium
   * New upstream release
   * Refresh patches
   * Remove debian ipv6 patch and header cast patch which were upstreamed
+  * Fix spacing and missing semicolon on Received: header (closes:
+    #775183)
 
  -- Don Armstrong <don@debian.org>  Thu, 06 Aug 2015 20:45:55 -0700
 
