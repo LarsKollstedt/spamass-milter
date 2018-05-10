@@ -90,6 +90,10 @@ fi;
 set -e
 
 start() {
+    if status; then
+        echo "$NAME is already running";
+        exit 1;
+    fi;
     # Because the default socket is in the same location as the
     # pidfile, we create them in this order.
     for DIR in "$(dirname $PIDFILE)" "$(dirname $SOCKET)"; do 
