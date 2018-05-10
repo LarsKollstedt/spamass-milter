@@ -1,6 +1,8 @@
 #!/usr/bin/make -f
 
 DH_VERBOSE = 1
+# enable hardening
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 %: 
 	dh $@ --parallel --with autotools_dev

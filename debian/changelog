@@ -1,6 +1,9 @@
 spamass-milter (0.4.0-2) unstable; urgency=medium
 
   * Document milter env variables (closes: #816799)
+  * Do not remove the socket if spamass-milter is already running (closes:
+    #782252)
+  * Enable the hardening flags (closes: #879671)
 
  -- Don Armstrong <don@debian.org>  Thu, 10 May 2018 12:13:11 -0700
 
