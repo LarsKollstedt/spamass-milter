@@ -125,7 +125,7 @@ start() {
     fi;
     start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
     sleep 1
-    if [ $(dirname $SOCKET) != "." ];
+    if [ $(dirname $SOCKET) != "." ]; then
        if [ -n "$SOCKETMODE" ]; then
 	       chmod $SOCKETMODE $SOCKET;
        fi;
