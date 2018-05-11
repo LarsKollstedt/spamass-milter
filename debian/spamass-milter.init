@@ -124,7 +124,7 @@ start() {
 	/bin/rm -f $SOCKET
     fi;
     start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
-    sleep 1s
+    sleep 1
     if [ -n "$SOCKETMODE" ]; then
 	chmod $SOCKETMODE $SOCKET;
     fi;
@@ -135,7 +135,7 @@ start() {
 
 stop(){
     start-stop-daemon --oknodo --stop -p $PIDFILE --signal 3 --exec $DAEMON
-    /bin/sleep 5s
+    /bin/sleep 5
     /bin/rm -f $SOCKET
     /bin/rm -f $PIDFILE
 }
