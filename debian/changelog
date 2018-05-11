@@ -7,6 +7,8 @@ spamass-milter (0.4.0-2) unstable; urgency=medium
   * Create a home directory for the spamass-milter user, because we use it
     as the default for spamassassin (Closes: #696861)
   * Remove the pointless s suffix in spamass-milter.init (closes: #772368)
+  * Don't bother to remove inet sockets or try to chown/chmod them.
+    (closes: #767966)
 
  -- Don Armstrong <don@debian.org>  Thu, 10 May 2018 12:13:11 -0700
 
