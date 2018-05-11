@@ -125,18 +125,22 @@ start() {
     fi;
     start-stop-daemon --start -p $PIDFILE $CHUID --exec $DAEMON -- -P $PIDFILE -f -p $SOCKET $OPTIONS
     sleep 1
-    if [ -n "$SOCKETMODE" ]; then
-	chmod $SOCKETMODE $SOCKET;
-    fi;
-    if [ -n "$SOCKETOWNER" ]; then
-	chown $SOCKETOWNER $SOCKET;
+    if [ $(dirname $SOCKET) != "." ];
+       if [ -n "$SOCKETMODE" ]; then
+	       chmod $SOCKETMODE $SOCKET;
+       fi;
+       if [ -n "$SOCKETOWNER" ]; then
+	       chown $SOCKETOWNER $SOCKET;
+       fi;
     fi;
 }
 
 stop(){
     start-stop-daemon --oknodo --stop -p $PIDFILE --signal 3 --exec $DAEMON
     /bin/sleep 5
-    /bin/rm -f $SOCKET
+    if [ $(dirname $SOCKET) != "." ]; then 
+	    /bin/rm -f $SOCKET
+    fi;
     /bin/rm -f $PIDFILE
 }
 
