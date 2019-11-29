@@ -52,30 +52,6 @@ restart() {
 	start
 }
 
-RETVAL=0
-
-start() {
-        echo -n "Starting spamass-milter: "
-        daemon spamass-milter -p ${SM_SOCKET} -f ${SM_EXTRA_FLAGS}
-        RETVAL=$?
-        echo
-	test $RETVAL -eq 0 && touch /var/lock/subsys/spamass-milter
-	return $RETVAL
-}
-
-stop() {
-        echo -n "Shutting down spamass-milter: "
-        killproc spamass-milter
-        RETVAL=$?
-        echo
-	test $RETVAL -eq 0 && rm -f /var/lock/subsys/spamass-milter
-}
-
-restart() {
-	stop
-	start
-}
-
 # See how we were called.
 case "$1" in
   start)

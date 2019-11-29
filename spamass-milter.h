@@ -39,8 +39,6 @@
 
 using namespace std;
 
-using namespace std;
-
 string retrieve_field(const string&, const string&);
 
 sfsistat mlfi_connect(SMFICTX*, char*, _SOCK_ADDR*);
@@ -170,13 +168,6 @@ public:
   // Counter to keep track of the number of recipients
   int    _numrcpt;
   
-  // Envelope info: MAIL FROM:, RCPT TO:, and IP address of remote host
-  // _rcpt only holds the first recipient if there are more than one
-  string _from, _rcpt, _connectip;
-  
-  // Counter to keep track of the number of recipients
-  int    _numrcpt;
-
   // The list of recipients for the current message
   list <string> recipients;
 
