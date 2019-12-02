@@ -8,9 +8,11 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 	dh $@
 
 override_dh_auto_configure:
+	 autoheader
 	 SPAMC="/usr/bin/spamc" SENDMAIL="/usr/sbin/sendmail" \
 		dh_auto_configure;
 
 override_dh_auto_clean:
 	dh_auto_clean;
 	rm -f config.log config.status config.h Makefile stamp-h1 spamass-milter.1
+	
