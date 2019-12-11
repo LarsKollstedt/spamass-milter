@@ -185,6 +185,7 @@ bool flag_full_email = false;		/* pass full email address to spamc */
 bool flag_expand = false;	/* alias/virtusertable expansion */
 bool warnedmacro = false;	/* have we logged that we couldn't fetch a macro? */
 bool auth = false;		/* don't scan authenticated users */
+bool alwaystag = false;
 
 // {{{ main()
 
@@ -192,7 +193,7 @@ int
 main(int argc, char* argv[])
 {
    int c, err = 0;
-   const char *args = "afd:mMp:P:r:l:u:D:i:b:B:e:xS:R:c:C:g:T:";
+   const char *args = "aAfd:mMp:P:r:l:u:D:i:b:B:e:xS:R:c:C:g:T:";
    char *sock = NULL;
    char *group = NULL;
    bool dofork = false;
@@ -213,6 +214,9 @@ main(int argc, char* argv[])
         switch (c) {
             case 'a':
                 auth = true;
+                break;
+            case 'A':
+                alwaystag = true;
                 break;
             case 'f':
                 dofork = true;
@@ -372,7 +376,7 @@ main(int argc, char* argv[])
       cout << "SpamAssassin Sendmail Milter Plugin" << endl;
       cout << "Usage: spamass-milter -p socket [-b|-B bucket] [-d xx[,yy...]] [-D host]" << endl;
       cout << "                      [-e defaultdomain] [-f] [-i networks] [-m] [-M]" << endl;
-      cout << "                      [-P pidfile] [-r nn] [-u defaultuser] [-x] [-a]" << endl;
+      cout << "                      [-P pidfile] [-r nn] [-u defaultuser] [-x] [-a] [-A]" << endl;
       cout << "                      [-T addresses]" << endl;
       cout << "                      [-c RejectRepyCode] [-C rejectcode] [-R rejectmsg] [-g group]" << endl;
       cout << "                      [-- spamc args ]" << endl;
@@ -402,6 +406,7 @@ main(int argc, char* argv[])
               "          Uses 'defaultuser' if there are multiple recipients." << endl;
       cout << "   -x: pass email address through alias and virtusertable expansion." << endl;
       cout << "   -a: don't scan messages over an authenticated connection." << endl;
+      cout << "   -A: Scan but only tag messages affected by -a, -T and -i, never reject or defer them." << endl;
       cout << "   -T: skip (ignore) checks if any recipient is in this address list" << endl;
       cout << "          example: -T foo@bar.com,spamlover@yourdomain.com" << endl;
       cout << "   -- spamc args: pass the remaining flags to spamc." << endl;
@@ -548,6 +553,7 @@ void update_or_insert(SpamAssassin* assassin, SMFICTX* ctx, string oldstring, t_
 int 
 assassinate(SMFICTX* ctx, SpamAssassin* assassin)
 {
+  struct context *sctx = (struct context*)smfi_getpriv(ctx);
   // find end of header (eol in last line of header)
   // and beginning of body
   string::size_type eoh1 = assassin->d().find("\n\n");
@@ -603,6 +609,12 @@ assassinate(SMFICTX* ctx, SpamAssassin* assassin)
 	}
 		}
 	}
+	if(sctx->onlytag){
+                debug(D_MISC, "We should only tag this message.");
+                do_reject=false;
+                do_defer=false;
+        }
+	
 	if (do_reject || do_defer)
 	{
                 if(do_defer){
@@ -857,6 +869,7 @@ mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	sctx->queueid = NULL;
 	sctx->auth_authen = NULL;
 	sctx->auth_ssf = NULL;
+        sctx->onlytag=false;
 	
 	/* store our FQDN */
 	macro_j = smfi_getsymval(ctx, const_cast<char *>("j"));
@@ -891,8 +904,11 @@ mlfi_connect(SMFICTX * ctx, char *hostname, _SOCK_ADDR * hostaddr)
 	{
 		debug(D_NET, "%s is in our ignore list - accepting message",
 		      sctx->connect_ip);
+                sctx->onlytag=true;
+                if(!alwaystag){
 		debug(D_FUNC, "mlfi_connect: exit ignore");
 		return SMFIS_ACCEPT;
+	}
 	}
 	
 	// Tell Milter to continue
@@ -1018,8 +1034,12 @@ mlfi_envfrom(SMFICTX* ctx, char** envfrom)
 
     if (auth_type) {
       debug(D_MISC, "auth_type=%s", auth_type);
+      sctx->onlytag=true;
+      if(!alwaystag){
+        debug(D_FUNC, "mlfi_envfrom: auth exit ignore");
       return SMFIS_ACCEPT;
     }
+  }
   }
 
   if (sctx == NULL)
@@ -1086,8 +1106,11 @@ mlfi_envrcpt(SMFICTX* ctx, char** envrcpt)
    if (addr_in_addresslist(envrcpt[0], &ignoreaddrs))
    {
       debug(D_RCPT, "%s is in our ignore addrlist - accepting message", envrcpt[0]);
+      sctx->onlytag=true;
+      if(!alwaystag){
       debug(D_FUNC, "mlfi_envrcpt: exit ignore");
       return SMFIS_ACCEPT;
+   }
    }
 
 	if (flag_expand)
