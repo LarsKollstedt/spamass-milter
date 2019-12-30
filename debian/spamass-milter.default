@@ -9,13 +9,23 @@
 
 # Default, use the spamass-milter user as the default user, ignore
 # messages from localhost
-OPTIONS="-u spamass-milter -i 127.0.0.1"
+OPTIONS="-u spamass-milter"
+TRUSTED_SUBNETS="127.0.0.1"
 
 # Reject emails with spamassassin scores > 15.
 #OPTIONS="${OPTIONS} -r 15"
 
 # Do not modify Subject:, Content-Type: or body.
 #OPTIONS="${OPTIONS} -m"
+
+# Default according to RFC5321:
+#NONREJECT_RECIPIENTS_ALLDOMAINS="abuse postmaster"
+# needs ALL_DOMAINS to be overriden to fit your domains.
+# Default for ALL_DOMAINS is FQHN and it's domain part.
+#ALL_DOMAINS="${ALL_DOMAINS} mydomain.com"
+
+# Additional domainspecific exceptions can be added with
+#NONREJECT_RECIPIENTS="myexception@mydomain.com"
 
 ######################################
 # If /usr/sbin/postfix is executable, the following are set by
