@@ -1,3 +1,22 @@
+spamass-milter (0.4.0-2.0.1manda.0.1) unstable; urgency=medium
+
+  * Combined http://git.donarmstrong.com/deb_pkgs/spamass-milter.git and
+    https://github.com/andybalholm/spamass-milter.git
+  * Very simple bugfix in handling allready running spamass-milter.
+  * Added the -c option to allow the adjustment of the SMTP
+    reply code. This allows also the adjustment to nonpermanent
+    reply codes.
+  * Added the -l option to implement a lower limit for giving back
+    random defers with a probability increasing with the spam score.
+  * Added the -A option to allow tagging of all messages even with 
+    the -T, -i and -a options set. If one of them is matching the 
+    rejection of the message is disabled and the message will only
+    get tagged.
+  * Implementing a better usable way to configure the -i an -T option 
+    of spamass-milter in /etc/default/spamass-milter.
+
+ -- Lars Kollstedt <lk@man-da.de>  Mon, 30 Dec 2019 08:58:01 +0100
+ 
 spamass-milter (0.4.0-2) unstable; urgency=medium
 
   * Document milter env variables (closes: #816799)
