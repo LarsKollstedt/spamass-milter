@@ -79,6 +79,11 @@ if [ -x /usr/sbin/postfix ]; then
     SOCKETMODE="0660"
 fi;
 
+# Default Domain is the FQHN and it's domain part it should be overridden or 
+# extended in /etc/default/spamass-milter
+ALL_DOMAINS="$(hostname -f) $(hostname -d)"
+NONREJECT_RECIPIENTS_ALLDOMAINS="abuse postmaster"
+
 if [ -r $DEFAULT ]; then
     . $DEFAULT;
 fi;
@@ -86,6 +91,36 @@ fi;
 if [ -n "$RUNAS" ]; then
     CHUID="--chuid $RUNAS";
 fi;
+
+if [ -n "$TRUSTED_SUBNETS" ] && ! echo "$OPTIONS" | grep -q '[-]i'
+  then
+  OPTIONS="${OPTIONS} -i $(
+      echo "$TRUSTED_SUBNETS" \
+      | tr '\n' ' ' \
+      | sed -E 's/^\s+//g' | sed -E 's/\s+$//g' | sed -E 's/\s{2,}/ /g' \
+      | tr ' ' ','
+    )"
+fi
+
+if [ -n "$ALL_DOMAINS" ] &&  [ -n "$NONREJECT_RECIPIENTS_ALLDOMAINS" ]
+  then
+  for t1 in $NONREJECT_RECIPIENTS_ALLDOMAINS
+    do
+    for t2 in $ALL_DOMAINS
+      do NONREJECT_RECIPIENTS="${NONREJECT_RECIPIENTS} ${t1}@${t2}"
+    done
+  done
+fi
+
+if [ -n "$NONREJECT_RECIPIENTS" ] && ! echo "$OPTIONS" | grep -q '[-]T'
+  then
+  OPTIONS="${OPTIONS} -T $(
+        echo "$NONREJECT_RECIPIENTS" \
+        | tr '\n' ' ' \
+        | sed -E 's/^\s+//g' | sed -E 's/\s+$//g' | sed -E 's/\s{2,}/ /g' \
+        | tr ' ' ','
+      )"
+fi
 
 set -e
 
