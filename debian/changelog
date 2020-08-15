@@ -1,11 +1,6 @@
-spamass-milter (0.4.0-3) unstable; urgency=medium
-
-  * Call the i macro only after envrcpt time. (closes: #696856)
-
- -- Don Armstrong <don@debian.org>  Sat, 17 Nov 2018 08:02:28 -0800
-
 spamass-milter (0.4.0-2) unstable; urgency=medium
 
+  * Call the i macro only after envrcpt time. (closes: #696856)
   * Document milter env variables (closes: #816799)
   * Do not remove the socket if spamass-milter is already running (closes:
     #782252)
@@ -16,7 +11,7 @@ spamass-milter (0.4.0-2) unstable; urgency=medium
   * Don't bother to remove inet sockets or try to chown/chmod them.
     (closes: #767966)
 
- -- Don Armstrong <don@debian.org>  Thu, 10 May 2018 12:13:11 -0700
+ -- Don Armstrong <don@debian.org>  Sat, 15 Aug 2020 12:22:41 -0700
 
 spamass-milter (0.4.0-1) unstable; urgency=medium
 
