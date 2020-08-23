@@ -2,7 +2,7 @@ Source: spamass-milter
 Section: mail
 Priority: optional
 Standards-Version: 4.2.0
-Build-Depends: libmilter-dev, debhelper (>= 12), groff-base, autotools-dev
+Build-Depends: libmilter-dev, debhelper (>= 12), groff-base, autoconf-archive
 Maintainer: Don Armstrong <don@debian.org>
 Vcs-Git: https://git.donarmstrong.com/deb_pkgs/spamass-milter.git
 Vcs-Browser: https://git.donarmstrong.com/deb_pkgs/spamass-milter.git
