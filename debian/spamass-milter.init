@@ -90,7 +90,7 @@ fi;
 set -e
 
 start() {
-    if status; then
+    if [ -e $PIDFILE ] && kill -0 $(cat $PIDFILE); then
         echo "$NAME is already running";
         exit 1;
     fi;
@@ -146,16 +146,16 @@ stop(){
 
 status(){
     if [ -e $PIDFILE ]; then 
-	if kill -0 $(cat $PIDFILE); then
-	    echo "${NAME} running";
-	    exit 0;
-	else
-	    echo "${NAME} dead but $PIDFILE exists";
-	    exit 1;
+	    if kill -0 $(cat $PIDFILE); then
+	        echo "${NAME} running";
+	        exit 0;
+	    else
+	        echo "${NAME} dead but $PIDFILE exists";
+	        exit 1;
+	    fi;
 	fi;
-	echo "${NAME} not running";
+    echo "${NAME} not running";
 	exit 3;
-    fi;
 }
 
 case "$1" in
